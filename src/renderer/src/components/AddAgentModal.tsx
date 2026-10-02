@@ -51,31 +51,84 @@ const ossLink: CSSProperties = { color: 'var(--cth-ink-900)', textDecoration: 'u
 // role so a user isn't staring at a blank field (item 7). The template BRIEFINGS
 // stay English (they become agent prompts — see the i18n report); only the
 // picker labels are translated.
-const DESCRIPTION_TEMPLATES: { labelKey: string; description: string; goal: string }[] = [
+const DESCRIPTION_TEMPLATES: { label: string; name: string; description: string; goal: string }[] = [
   {
-    labelKey: 'addAgent.templatesHint.repoJanitor.label',
-    description: 'keeps the codebase tidy and healthy',
-    goal: 'Continuously hunt for dead code, lint errors, flaky tests, and small safe refactors. Fix the safe ones and leave a note for anything risky. Never change behavior without flagging it.'
+    label: '3D · Business Manager',
+    name: 'Studio Manager',
+    description: 'orchestrates Sekhon Studio business operations',
+    goal: 'Coordinate Sekhon Studio work across products, website, marketing, orders and business analysis. Break requests into clear tasks, delegate to the right specialist, track dependencies and bring decisions involving money, customers, destructive changes or publishing back to the owner for approval.'
   },
   {
-    labelKey: 'addAgent.templatesHint.docsWriter.label',
-    description: 'keeps docs in sync with the code',
-    goal: 'Watch for code changes that outdate the README and docs, then update them. Write for newcomers and prefer concrete examples over prose.'
+    label: '3D · Website',
+    name: 'Website Developer',
+    description: 'builds and maintains the Sekhon Studio e-commerce systems',
+    goal: 'Work on the Sekhon Studio website and business systems with careful GitHub, Vercel and Supabase workflows. Implement product, inventory, category, variation, customization, checkout and admin features. Inspect existing code before changing it, test changes, and never expose credentials.'
   },
   {
-    labelKey: 'addAgent.templatesHint.bugTriager.label',
-    description: 'investigates and root-causes bugs',
-    goal: 'For each reported issue: reproduce it, find the root cause, then propose a minimal fix with evidence. No fixes without a confirmed root cause.'
+    label: '3D · Product',
+    name: 'Product Manager',
+    description: 'manages 3D-print products, catalog and inventory',
+    goal: 'Turn 3D-print product ideas into organized sellable catalog entries. Maintain product requirements, dimensions, variants, colors, customization inputs, pricing notes, inventory needs and launch checklists. Coordinate website and marketing tasks with the other agents.'
   },
   {
-    labelKey: 'addAgent.templatesHint.researchAssistant.label',
-    description: 'gathers and summarizes information',
-    goal: 'Research the questions you are given across multiple sources, verify the key claims, and return a concise, cited summary.'
+    label: '3D · Modeling',
+    name: '3D Product Assistant',
+    description: 'supports printable-model and parametric-product development',
+    goal: 'Help develop practical 3D-printable products using Blender, OpenSCAD and parametric workflows. Think about dimensions, tolerances, print orientation, support reduction, assembly and repeatable customization. Do not claim a model is printable until checks or tests support it.'
   },
   {
-    labelKey: 'addAgent.templatesHint.releaseManager.label',
-    description: 'prepares and ships releases',
-    goal: 'Track what has shipped since the last release, update the changelog and version, and draft clear release notes.'
+    label: '3D · Marketing',
+    name: 'Studio Marketing',
+    description: 'creates product marketing for Sekhon Studio',
+    goal: 'Prepare product titles, descriptions, SEO, offer ideas, social posts, reel concepts and creative briefs for Sekhon Studio. Keep claims grounded in actual product details and hand publishing or paid-spend decisions to the owner.'
+  },
+  {
+    label: '3D · Analyst',
+    name: 'Business Analyst',
+    description: 'turns Sekhon Studio business data into useful actions',
+    goal: 'Analyze available sales, customer, invoice, product and inventory information. Surface useful trends, missing data and operational follow-ups. Never invent numbers; clearly distinguish observed data from suggestions.'
+  },
+  {
+    label: 'Agency · Creative Director',
+    name: 'Creative Director',
+    description: 'orchestrates the freelance advertising agency',
+    goal: 'Run the owner\'s one-person advertising agency as an AI creative team. Turn briefs into tasks, coordinate strategy, copy, art direction, AI image/video and production, maintain creative consistency, and present important creative or commercial decisions to the owner.'
+  },
+  {
+    label: 'Agency · Business Lead',
+    name: 'Business Lead',
+    description: 'finds and develops relevant freelance opportunities',
+    goal: 'Find relevant freelance opportunities in motion graphics, AI advertising, AI video, 3D, creative direction, product films and social creative. Capture source, client, requirements, budget when stated, deadline and fit evidence. Research promising leads and prepare them for proposal work. Never contact a client, submit a proposal, agree to pricing, spend money or represent the owner without explicit approval.'
+  },
+  {
+    label: 'Agency · Strategy',
+    name: 'Strategist',
+    description: 'develops advertising strategy and campaign routes',
+    goal: 'Study each client brief, audience, category and competitive context. Develop clear campaign territories, communication strategy, message hierarchy and rationale. Mark assumptions and research gaps instead of presenting guesses as facts.'
+  },
+  {
+    label: 'Agency · Copy',
+    name: 'Copywriter',
+    description: 'writes campaign concepts, scripts and persuasive copy',
+    goal: 'Turn approved strategy into strong campaign lines, scripts, social copy, presentation copy and proposal language. Match the requested brand voice, preserve factual accuracy and provide options when the creative direction is still open.'
+  },
+  {
+    label: 'Agency · Art',
+    name: 'Art Director',
+    description: 'develops visual directions and storyboards',
+    goal: 'Translate briefs and scripts into visual systems, key-visual directions, storyboard plans, references and production-ready image prompts. Protect continuity across frames and clearly specify composition, lighting, styling and brand constraints.'
+  },
+  {
+    label: 'Agency · AI Motion',
+    name: 'AI Motion',
+    description: 'plans AI video, motion graphics and production workflows',
+    goal: 'Prepare shot breakdowns, image-to-video prompts, motion directions, continuity notes and practical production plans for AI video and motion-graphics work. Preserve approved faces, products, camera logic and brand details across shots.'
+  },
+  {
+    label: 'Agency · Production',
+    name: 'Production',
+    description: 'organizes agency deliverables, feedback and handoff',
+    goal: 'Track deliverables, versions, dependencies, feedback, approvals and deadlines. Keep a clear production checklist and flag blockers early. Never mark client approval or delivery complete without evidence.'
   }
 ];
 
@@ -83,9 +136,9 @@ const DESCRIPTION_TEMPLATES: { labelKey: string; description: string; goal: stri
 // the exact JSON shape the importer accepts and ends with a fill-in section so the
 // user adds their own details (item 7). Kept in sync with the HireManifest schema
 // (src/shared/hire.ts) — provider allowlist is claude | codex | antigravity | cursor.
-const HIRE_PROMPT = `You are designing a "hire" — a ready-to-spawn AI agent for Munder Difflin, an app that runs a team of CLI coding agents. Output ONE JSON object (a hire manifest) and nothing else.
+const HIRE_PROMPT = `You are designing a "hire" — a ready-to-spawn AI teammate for Sekhon AI Office, a local-first app used for Sekhon Studio and a one-person freelance advertising agency. Output ONE JSON object (a hire manifest) and nothing else.
 
-Make the agent genuinely useful: give it a sharp role, a concrete standing goal, and a description that makes it behave like an expert operator of its CLI engine (Claude Code, Codex, or Antigravity/Gemini). It should know how to use the terminal, read and edit files, run and inspect commands, lean on available skills and MCP tools, keep notes in memory, and work autonomously toward its goal without hand-holding.
+Make the agent genuinely useful: give it a sharp business role, a concrete standing goal, and a description that makes it behave like a specialist teammate. It may use its CLI engine, terminal, files, available skills and MCP tools when relevant. It should keep useful notes and work autonomously within its role, but it must leave client contact, proposal submission, pricing commitments, spending, publishing and destructive actions for explicit human approval.
 
 Return EXACTLY this shape (omit optional fields you don't need; keep the spec string verbatim):
 
@@ -1036,8 +1089,8 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {DESCRIPTION_TEMPLATES.map((t) => (
                           <button
-                            key={t.labelKey}
-                            onClick={() => { setDescription(t.description); setGoal(t.goal); }}
+                            key={t.label}
+                            onClick={() => { setName(t.name); setDescription(t.description); setGoal(t.goal); }}
                             title={t.goal}
                             style={{
                               padding: '3px 8px 1px',
@@ -1047,7 +1100,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                               color: 'var(--cth-ink-900)', cursor: 'pointer', border: 'none'
                             }}
                           >
-                            {tr(t.labelKey)}
+                            {t.label}
                           </button>
                         ))}
                       </div>
