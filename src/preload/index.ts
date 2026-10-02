@@ -1290,6 +1290,16 @@ const api = {
     ipcRenderer.invoke('integrations:remove', req),
   integrationsTest: (req: { id: string; path?: string }): Promise<{ ok: boolean; status?: number; error?: string }> =>
     ipcRenderer.invoke('integrations:test', req),
+  // Local model manager — loopback-only Ollama operations implemented in main.
+  // No shell commands and no arbitrary remote URLs.
+  localOllamaList: (baseUrl: string): Promise<{
+    ok: boolean;
+    models?: Array<{ name: string; size?: number; modifiedAt?: string }>;
+    error?: string;
+  }> => ipcRenderer.invoke('localModels:ollamaList', baseUrl),
+  localOllamaPull: (req: { baseUrl: string; model: string }): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('localModels:ollamaPull', req),
+
   // Per-CLI-provider BYOK keys — WRITE-ONLY. `providerKeySet` stores a backend key one
   // way (never echoed); `providerKeyHas` returns only a boolean; no method ever returns
   // the plaintext. Keys are materialized MAIN-ONLY at spawn.
