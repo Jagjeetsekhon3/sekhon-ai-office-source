@@ -146,7 +146,7 @@ const DESCRIPTION_TEMPLATES: { workspace: 'studio' | 'agency'; label: string; na
 // Copy-paste prompt the user hands to any AI to generate a hire manifest. It pins
 // the exact JSON shape the importer accepts and ends with a fill-in section so the
 // user adds their own details (item 7). Kept in sync with the HireManifest schema
-// (src/shared/hire.ts) — provider allowlist is claude | codex | antigravity | cursor.
+// (src/shared/hire.ts) — provider allowlist is claude | codex | antigravity | cursor | sekhon-local.
 const HIRE_PROMPT = `You are designing a "hire" — a ready-to-spawn AI teammate for Sekhon AI Office, a local-first app used for Sekhon Studio and a one-person freelance advertising agency. Output ONE JSON object (a hire manifest) and nothing else.
 
 Make the agent genuinely useful: give it a sharp business role, a concrete standing goal, and a description that makes it behave like a specialist teammate. It may use its CLI engine, terminal, files, available skills and MCP tools when relevant. It should keep useful notes and work autonomously within its role, but it must leave client contact, proposal submission, pricing commitments, spending, publishing and destructive actions for explicit human approval.
@@ -158,8 +158,8 @@ Return EXACTLY this shape (omit optional fields you don't need; keep the spec st
   "name": "Jim",
   "description": "one-line role — what this agent is for",
   "goal": "standing directive injected on every prompt — specific and outcome-oriented",
-  "provider": "claude",
-  "model": "claude-opus-4-8[1m]",
+  "provider": "sekhon-local",
+  "model": "qwen3:8b",
   "capabilities": ["code-review", "docs"],
   "isolate": false,
   "tokenCap": 2000000,
@@ -167,13 +167,13 @@ Return EXACTLY this shape (omit optional fields you don't need; keep the spec st
 }
 
 Rules:
-- "provider" MUST be one of: cursor | claude | codex | antigravity. "model" must be a real model id for that provider (e.g. gpt-5.6-luna-high, claude-opus-4-8[1m], gpt-5-codex, "Gemini 3.1 Pro (High)").
+- "provider" MUST be one of: cursor | claude | codex | antigravity | sekhon-local. "model" must be a real model id for that provider. For sekhon-local, use an installed model id reported by Settings → Agents & Models (for example qwen3:8b).
 - Do NOT include shell commands or any flags beyond these fields.
 - Make "description" + "goal" concrete enough that the agent knows exactly what to do on its first turn.
 
 --- ADD YOUR DETAILS BELOW (the AI should use these) ---
 Role / what I want this agent to do:
-Preferred engine (claude / codex / antigravity), if any:
+Preferred engine (claude / codex / antigravity / cursor / sekhon-local), if any:
 Repos, tools, style, or constraints to respect:
 `;
 
