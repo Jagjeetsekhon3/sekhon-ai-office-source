@@ -3213,6 +3213,71 @@ ipcMain.handle('localModels:ollamaPull', async (_evt, payload: unknown) => {
   }
 });
 
+// Delete an installed Ollama model. Same loopback + model-name guards as pull.
+ipcMain.handle('localModels:ollamaDelete', async (_evt, payload: unknown) => {
+  const p = (payload ?? {}) as { baseUrl?: unknown; model?: unknown };
+  const root = localOllamaRoot(p.baseUrl);
+  if (!root.ok) return root;
+  const model = typeof p.model === 'string' ? p.model.trim() : '';
+  if (!model || model.length > 160 || !/^[A-Za-z0-9._:\/-]+$/.test(model)) {
+    return { ok: false, error: 'invalid model name' };
+  }
+  try {
+    const res = await fetch(ollamaUrl(root.url, '/api/delete'), {
+      method: 'DELETE',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model }),
+      signal: AbortSignal.timeout(30_000)
+    });
+    if (!res.ok) return { ok: false, error: `Ollama returned HTTP ${res.status}` };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+});
+
+/** Normalize a LOCAL OpenAI-compatible endpoint (LM Studio, vLLM, llama.cpp,
+ *  LocalAI, Ollama's /v1 facade). This settings surface is intentionally
+ *  loopback-only; remote/self-hosted URLs remain possible through the existing
+ *  per-engine advanced base-URL fields, but are not probed by this manager. */
+function localOpenAiBase(raw: unknown): { ok: true; url: URL } | { ok: false; error: string } {
+  if (typeof raw !== 'string' || !raw.trim()) return { ok: false, error: 'local server URL required' };
+  let u: URL;
+  try { u = new URL(raw.trim()); } catch { return { ok: false, error: 'invalid local server URL' }; }
+  const host = u.hostname.toLowerCase();
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return { ok: false, error: 'URL must use http or https' };
+  if (host !== 'localhost' && host !== '127.0.0.1' && host !== '::1' && host !== '[::1]') {
+    return { ok: false, error: 'local AI manager only connects to this computer' };
+  }
+  u.search = '';
+  u.hash = '';
+  u.pathname = u.pathname.replace(/\/$/, '');
+  if (!u.pathname.endsWith('/v1')) u.pathname = (u.pathname || '') + '/v1';
+  return { ok: true, url: u };
+}
+function localOpenAiUrl(base: URL, path: string): string {
+  return base.toString().replace(/\/$/, '') + path;
+}
+
+ipcMain.handle('localModels:openAiList', async (_evt, rawUrl: unknown) => {
+  const base = localOpenAiBase(rawUrl);
+  if (!base.ok) return base;
+  try {
+    const res = await fetch(localOpenAiUrl(base.url, '/models'), { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return { ok: false, error: `Local server returned HTTP ${res.status}` };
+    const data = await res.json() as { data?: Array<{ id?: unknown; owned_by?: unknown }> };
+    const models = Array.isArray(data.data)
+      ? data.data.filter((m) => typeof m?.id === 'string').map((m) => ({
+          id: String(m.id),
+          ownedBy: typeof m.owned_by === 'string' ? m.owned_by : undefined
+        }))
+      : [];
+    return { ok: true, baseUrl: base.url.toString().replace(/\/$/, ''), models };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+});
+
 // ─── IPC: per-CLI-provider BYOK keys (write-only) ────────────────────────────
 // API keys for the backend model-providers the non-Claude CLIs use are stored
 // WRITE-ONLY under `apikey:<backend>` in the same encrypted broker. The renderer
