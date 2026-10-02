@@ -3834,6 +3834,39 @@ ipcMain.handle('history:list', (_evt, agentId: unknown, limit: unknown) =>
 ipcMain.handle('history:search', (_evt, query: unknown, limit: unknown) =>
   persist.searchHistory(typeof query === 'string' ? query : '', typeof limit === 'number' ? limit : undefined));
 
+// ─── IPC: Agency leads (SQLite) ──────────────────────────────────────────────
+ipcMain.handle('leads:list', () => persist.listLeads());
+ipcMain.handle('leads:add', (_evt, payload: unknown) => {
+  const p = (payload ?? {}) as Record<string, unknown>;
+  if (typeof p.title !== 'string' || !p.title.trim()) return { ok: false, error: 'title required' };
+  try {
+    const lead = persist.addLead({
+      title: p.title,
+      client: typeof p.client === 'string' ? p.client : null,
+      source: typeof p.source === 'string' ? p.source : null,
+      sourceUrl: typeof p.sourceUrl === 'string' ? p.sourceUrl : null,
+      budget: typeof p.budget === 'string' ? p.budget : null,
+      deadline: typeof p.deadline === 'string' ? p.deadline : null,
+      fit: typeof p.fit === 'string' ? p.fit : null,
+      notes: typeof p.notes === 'string' ? p.notes : null,
+      status: 'new'
+    });
+    return lead ? { ok: true, lead } : { ok: false, error: 'could not save lead' };
+  } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
+});
+ipcMain.handle('leads:update', (_evt, id: unknown, patch: unknown) => {
+  if (typeof id !== 'number' || !patch || typeof patch !== 'object') return { ok: false, error: 'invalid args' };
+  try {
+    const lead = persist.updateLead(id, patch as never);
+    return lead ? { ok: true, lead } : { ok: false, error: 'lead not found or invalid' };
+  } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
+});
+ipcMain.handle('leads:delete', (_evt, id: unknown) => {
+  if (typeof id !== 'number') return { ok: false, error: 'invalid id' };
+  try { return { ok: persist.deleteLead(id) }; }
+  catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
+});
+
 // ─── IPC: quit confirmation ─────────────────────────────────────────────────
 /** Tear the harness down and quit. Shared by the hard "kill all & quit" path
  *  and the closing-time conclusion (after the god confirmed the floor saved). */
