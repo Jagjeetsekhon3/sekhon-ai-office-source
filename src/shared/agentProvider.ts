@@ -34,6 +34,7 @@ export type AgentProvider =
   | 'pi'
   | 'copilot'
   | 'cursor'
+  | 'sekhon-local'
   | 'custom';
 
 /** Structured descriptor for how a NON-hiveAware provider gets hive lifecycle
@@ -52,6 +53,7 @@ export type AgentProvider =
  *               handoff today; 'serve' reserved for a future HTTP push path). */
 export type BridgeDescriptor =
   | { kind: 'hooks'; shim: 'agy' | 'codex' | 'pi' | 'opencode' | 'grok' | 'gemini' }
+  | { kind: 'native' }
   | {
       kind: 'proxy';
       api: 'openai' | 'anthropic';
@@ -568,6 +570,26 @@ export const AGENT_PROVIDER_PRESETS: AgentProviderPreset[] = [
     docsUrl: 'https://cursor.com/docs/cli/install'
   },
   {
+    // Sekhon Local is bundled with the app: no third-party agent CLI is required.
+    // Main swaps this sentinel command for Electron's own Node runtime + the bundled
+    // local-agent script before PTY spawn. The script talks directly to a loopback
+    // OpenAI-compatible server (Ollama / LM Studio / vLLM / llama.cpp / LocalAI).
+    id: 'sekhon-local',
+    label: 'Sekhon Local',
+    defaultCommand: 'sekhon-local',
+    commandGroups: [],
+    autoModeFlag: '',
+    autoFlag: '',
+    supportsModel: true,
+    modelFlag: '--model',
+    hiveAware: false,
+    bridge: { kind: 'native' },
+    canReceiveInbox: true,
+    initialPromptFlag: '--system',
+    recommendedOrchestratorModel: undefined,
+    resumeFlag: undefined
+  },
+  {
     id: 'custom',
     label: 'Custom',
     defaultCommand: '',
@@ -594,6 +616,7 @@ export function isAgentProvider(value: unknown): value is AgentProvider {
     value === 'pi' ||
     value === 'copilot' ||
     value === 'cursor' ||
+    value === 'sekhon-local' ||
     value === 'custom'
   );
 }
@@ -646,6 +669,7 @@ export function inferAgentProvider(command: string | undefined, explicit?: unkno
   if (bin === 'pi') return 'pi';
   if (bin === 'copilot') return 'copilot';
   // Cursor ships as `cursor-agent`; `agent` is a shorter alias (generic name — check last).
+  if (bin === 'sekhon-local') return 'sekhon-local';
   if (bin === 'cursor-agent') return 'cursor';
   if (bin === 'agent') return 'cursor';
   if (bin === 'claude' || !bin) return 'claude';
