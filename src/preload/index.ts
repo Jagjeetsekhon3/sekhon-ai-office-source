@@ -1327,6 +1327,14 @@ const api = {
   }> => ipcRenderer.invoke('localModels:ollamaList', baseUrl),
   localOllamaPull: (req: { baseUrl: string; model: string }): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke('localModels:ollamaPull', req),
+  localOllamaDelete: (req: { baseUrl: string; model: string }): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('localModels:ollamaDelete', req),
+  localOpenAiList: (baseUrl: string): Promise<{
+    ok: boolean;
+    baseUrl?: string;
+    models?: Array<{ id: string; ownedBy?: string }>;
+    error?: string;
+  }> => ipcRenderer.invoke('localModels:openAiList', baseUrl),
 
   // Per-CLI-provider BYOK keys — WRITE-ONLY. `providerKeySet` stores a backend key one
   // way (never echoed); `providerKeyHas` returns only a boolean; no method ever returns
