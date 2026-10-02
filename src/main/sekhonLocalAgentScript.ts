@@ -19,7 +19,8 @@ function arg(name) {
   return i >= 0 ? process.argv[i + 1] : undefined;
 }
 const MODEL = arg('--model') || process.env.SEKHON_LOCAL_MODEL || '';
-const BASE = (process.env.SEKHON_LOCAL_BASE_URL || 'http://localhost:11434/v1').replace(/\\/$/, '');
+const BASE_RAW = process.env.SEKHON_LOCAL_BASE_URL || 'http://localhost:11434/v1';
+const BASE = BASE_RAW.endsWith('/') ? BASE_RAW.slice(0, -1) : BASE_RAW;
 const SYSTEM = arg('--system') || 'You are a helpful local AI agent inside Sekhon AI Office.';
 const AUTO = process.env.SEKHON_LOCAL_AUTO === '1';
 const AGENT = process.env.AGENT_ID || 'local-agent';
