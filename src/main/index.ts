@@ -2661,13 +2661,17 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
       mkdirSync(dir, { recursive: true });
       writeFileSync(script, SEKHON_LOCAL_AGENT_SCRIPT, 'utf8');
       const cfg = readConfig();
+      const localBase = localOpenAiBase(cfg.providerBaseUrls?.['sekhon-local'] || 'http://localhost:11434/v1');
+      if (!localBase.ok) {
+        return { ok: false as const, error: `Sekhon Local requires a loopback model server: ${localBase.error}` };
+      }
       const originalArgs = opts.args ?? [];
       opts.command = process.execPath;
       opts.args = [script, ...originalArgs];
       opts.env = {
         ...(opts.env ?? {}),
         ELECTRON_RUN_AS_NODE: '1',
-        SEKHON_LOCAL_BASE_URL: cfg.providerBaseUrls?.['sekhon-local'] || 'http://localhost:11434/v1',
+        SEKHON_LOCAL_BASE_URL: localBase.url.toString().replace(/\/$/, ''),
         SEKHON_LOCAL_AUTO: cfg.autoMode ? '1' : '0'
       };
     } catch (e) {
