@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { PixelPanel } from './PixelPanel';
 import { PixelButton } from './PixelButton';
 
@@ -27,7 +27,7 @@ const COLS: Array<{ key: Status; label: string }> = [
   { key: 'lost', label: 'LOST' }
 ];
 
-const inputStyle: React.CSSProperties = {
+const inputStyle: CSSProperties = {
   width: '100%', minWidth: 0, border: 'none', outline: 'none',
   padding: '7px 8px', background: 'var(--cth-paper-100)',
   color: 'var(--cth-ink-900)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
