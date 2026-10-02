@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { PixelPanel } from './PixelPanel';
 import { PixelButton } from './PixelButton';
+import { useStore } from '@/store/store';
 
 type Status = 'new' | 'reviewing' | 'proposal' | 'applied' | 'won' | 'lost';
 type Lead = {
@@ -41,6 +42,21 @@ export function LeadsBoardModal({ onClose }: { onClose: () => void }) {
   const [draft, setDraft] = useState({
     title: '', client: '', source: '', sourceUrl: '', budget: '', deadline: '', fit: '', notes: ''
   });
+  const agents = useStore((s) => s.agents);
+  const enqueueMessage = useStore((s) => s.enqueueMessage);
+  const businessLead = agents.find((a) =>
+    a.name.toLowerCase() === 'business lead' ||
+    a.description?.toLowerCase().includes('freelance opportunit')
+  );
+
+  const sendBusinessLead = (instruction: string) => {
+    if (!businessLead) {
+      setError('Add the Agency · Business Lead agent first, then run this workflow.');
+      return;
+    }
+    enqueueMessage(businessLead.id, instruction);
+    setError('');
+  };
 
   const refresh = useCallback(async () => {
     try { setLeads(await window.cth.leadsList()); setError(''); }
@@ -88,6 +104,15 @@ export function LeadsBoardModal({ onClose }: { onClose: () => void }) {
             <div style={{ flex: 1, fontSize: 12, color: 'var(--cth-ink-500)' }}>
               Find work → evaluate → prepare pitch → apply with your approval → win → produce.
             </div>
+            <PixelButton
+              variant="primary"
+              size="sm"
+              onClick={() => sendBusinessLead(
+                'Research fresh freelance opportunities that fit my advertising-agency services: motion graphics, AI advertising, AI video, 3D, creative direction, product films and social creative. Prefer credible opportunities with clear source links and recent activity. For each promising lead, report project title, client/company when known, source, source URL, stated budget, deadline, fit rationale and risks. Do not contact anyone, submit proposals, agree pricing or spend money. Bring the shortlist back to me for approval before any outreach.'
+              )}
+            >
+              Find projects
+            </PixelButton>
             <PixelButton variant="secondary" size="sm" onClick={() => setAdding((v) => !v)}>
               {adding ? 'Cancel' : '+ Add lead'}
             </PixelButton>
@@ -150,10 +175,20 @@ export function LeadsBoardModal({ onClose }: { onClose: () => void }) {
                       >
                         {COLS.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}
                       </select>
-                      <button onClick={() => void remove(lead.id)} style={{
-                        alignSelf: 'flex-end', border: 'none', background: 'transparent', cursor: 'pointer',
-                        color: 'var(--cth-ink-500)', fontSize: 10
-                      }}>remove</button>
+                      <div style={{ display: 'flex', gap: 5, justifyContent: 'space-between', alignItems: 'center' }}>
+                        <button
+                          onClick={() => sendBusinessLead(
+                            `Prepare this lead for my review and a tailored proposal. Do not submit or contact the client. Lead: ${lead.title}; client: ${lead.client ?? 'unknown'}; source: ${lead.source ?? 'unknown'}; URL: ${lead.sourceUrl ?? 'not provided'}; budget: ${lead.budget ?? 'not stated'}; deadline: ${lead.deadline ?? 'not stated'}; fit: ${lead.fit ?? 'not recorded'}; notes: ${lead.notes ?? 'none'}.`
+                          )}
+                          style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--cth-ink-700)', fontSize: 10, padding: 0 }}
+                        >
+                          prepare pitch
+                        </button>
+                        <button onClick={() => void remove(lead.id)} style={{
+                          border: 'none', background: 'transparent', cursor: 'pointer',
+                          color: 'var(--cth-ink-500)', fontSize: 10
+                        }}>remove</button>
+                      </div>
                     </div>
                   ))}
                   {grouped[col.key].length === 0 && <div style={{ padding: 8, textAlign: 'center', color: 'var(--cth-ink-300)' }}>—</div>}
