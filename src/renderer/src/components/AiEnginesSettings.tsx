@@ -86,7 +86,7 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
   const [ollamaModel, setOllamaModel] = useState('');
   const [ollamaNote, setOllamaNote] = useState('');
   const [ollamaBusy, setOllamaBusy] = useState(false);
-  const [localEngine, setLocalEngine] = useState<AgentProvider>('opencode');
+  const [localEngine, setLocalEngine] = useState<AgentProvider>('sekhon-local');
 
   // LM Studio / vLLM / llama.cpp / LocalAI: OpenAI-compatible local servers.
   const [compatUrl, setCompatUrl] = useState('http://localhost:1234/v1');
