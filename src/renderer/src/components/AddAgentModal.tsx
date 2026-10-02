@@ -51,80 +51,93 @@ const ossLink: CSSProperties = { color: 'var(--cth-ink-900)', textDecoration: 'u
 // role so a user isn't staring at a blank field (item 7). The template BRIEFINGS
 // stay English (they become agent prompts — see the i18n report); only the
 // picker labels are translated.
-const DESCRIPTION_TEMPLATES: { label: string; name: string; description: string; goal: string }[] = [
+const DESCRIPTION_TEMPLATES: { workspace: 'studio' | 'agency'; label: string; name: string; description: string; goal: string }[] = [
   {
+    workspace: 'studio',
     label: '3D · Business Manager',
     name: 'Studio Manager',
     description: 'orchestrates Sekhon Studio business operations',
     goal: 'Coordinate Sekhon Studio work across products, website, marketing, orders and business analysis. Break requests into clear tasks, delegate to the right specialist, track dependencies and bring decisions involving money, customers, destructive changes or publishing back to the owner for approval.'
   },
   {
+    workspace: 'studio',
     label: '3D · Website',
     name: 'Website Developer',
     description: 'builds and maintains the Sekhon Studio e-commerce systems',
     goal: 'Work on the Sekhon Studio website and business systems with careful GitHub, Vercel and Supabase workflows. Implement product, inventory, category, variation, customization, checkout and admin features. Inspect existing code before changing it, test changes, and never expose credentials.'
   },
   {
+    workspace: 'studio',
     label: '3D · Product',
     name: 'Product Manager',
     description: 'manages 3D-print products, catalog and inventory',
     goal: 'Turn 3D-print product ideas into organized sellable catalog entries. Maintain product requirements, dimensions, variants, colors, customization inputs, pricing notes, inventory needs and launch checklists. Coordinate website and marketing tasks with the other agents.'
   },
   {
+    workspace: 'studio',
     label: '3D · Modeling',
     name: '3D Product Assistant',
     description: 'supports printable-model and parametric-product development',
     goal: 'Help develop practical 3D-printable products using Blender, OpenSCAD and parametric workflows. Think about dimensions, tolerances, print orientation, support reduction, assembly and repeatable customization. Do not claim a model is printable until checks or tests support it.'
   },
   {
+    workspace: 'studio',
     label: '3D · Marketing',
     name: 'Studio Marketing',
     description: 'creates product marketing for Sekhon Studio',
     goal: 'Prepare product titles, descriptions, SEO, offer ideas, social posts, reel concepts and creative briefs for Sekhon Studio. Keep claims grounded in actual product details and hand publishing or paid-spend decisions to the owner.'
   },
   {
+    workspace: 'studio',
     label: '3D · Analyst',
     name: 'Business Analyst',
     description: 'turns Sekhon Studio business data into useful actions',
     goal: 'Analyze available sales, customer, invoice, product and inventory information. Surface useful trends, missing data and operational follow-ups. Never invent numbers; clearly distinguish observed data from suggestions.'
   },
   {
+    workspace: 'agency',
     label: 'Agency · Creative Director',
     name: 'Creative Director',
     description: 'orchestrates the freelance advertising agency',
     goal: 'Run the owner\'s one-person advertising agency as an AI creative team. Turn briefs into tasks, coordinate strategy, copy, art direction, AI image/video and production, maintain creative consistency, and present important creative or commercial decisions to the owner.'
   },
   {
+    workspace: 'agency',
     label: 'Agency · Business Lead',
     name: 'Business Lead',
     description: 'finds and develops relevant freelance opportunities',
     goal: 'Find relevant freelance opportunities in motion graphics, AI advertising, AI video, 3D, creative direction, product films and social creative. Capture source, client, requirements, budget when stated, deadline and fit evidence. Research promising leads and prepare them for proposal work. Never contact a client, submit a proposal, agree to pricing, spend money or represent the owner without explicit approval.'
   },
   {
+    workspace: 'agency',
     label: 'Agency · Strategy',
     name: 'Strategist',
     description: 'develops advertising strategy and campaign routes',
     goal: 'Study each client brief, audience, category and competitive context. Develop clear campaign territories, communication strategy, message hierarchy and rationale. Mark assumptions and research gaps instead of presenting guesses as facts.'
   },
   {
+    workspace: 'agency',
     label: 'Agency · Copy',
     name: 'Copywriter',
     description: 'writes campaign concepts, scripts and persuasive copy',
     goal: 'Turn approved strategy into strong campaign lines, scripts, social copy, presentation copy and proposal language. Match the requested brand voice, preserve factual accuracy and provide options when the creative direction is still open.'
   },
   {
+    workspace: 'agency',
     label: 'Agency · Art',
     name: 'Art Director',
     description: 'develops visual directions and storyboards',
     goal: 'Translate briefs and scripts into visual systems, key-visual directions, storyboard plans, references and production-ready image prompts. Protect continuity across frames and clearly specify composition, lighting, styling and brand constraints.'
   },
   {
+    workspace: 'agency',
     label: 'Agency · AI Motion',
     name: 'AI Motion',
     description: 'plans AI video, motion graphics and production workflows',
     goal: 'Prepare shot breakdowns, image-to-video prompts, motion directions, continuity notes and practical production plans for AI video and motion-graphics work. Preserve approved faces, products, camera logic and brand details across shots.'
   },
   {
+    workspace: 'agency',
     label: 'Agency · Production',
     name: 'Production',
     description: 'organizes agency deliverables, feedback and handoff',
@@ -190,12 +203,13 @@ function uniqueId(name: string): string {
 export interface AddAgentModalProps {
   onClose: () => void;
   config: HarnessConfig;
+  businessWorkspace?: 'studio' | 'agency';
   /** Lift config changes (e.g. a project registered from this modal) back up to
    *  App so the rest of the UI — and the next time this modal opens — sees them. */
   onConfigChange?: (config: HarnessConfig) => void;
 }
 
-export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModalProps) {
+export function AddAgentModal({ onClose, config, businessWorkspace = 'studio', onConfigChange }: AddAgentModalProps) {
   const { t: tr } = useTranslation();
   const rtl = useRtl();
   const addAgent = useStore(s => s.addAgent);
@@ -1087,7 +1101,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
                   <>
                     <Row label={tr('addAgent.templates')}>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        {DESCRIPTION_TEMPLATES.map((t) => (
+                        {DESCRIPTION_TEMPLATES.filter((t) => t.workspace === businessWorkspace).map((t) => (
                           <button
                             key={t.label}
                             onClick={() => { setName(t.name); setDescription(t.description); setGoal(t.goal); }}
