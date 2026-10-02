@@ -523,6 +523,22 @@ export interface CommandHistoryEntry {
   ts: number;
 }
 
+export type AgencyLeadStatus = 'new' | 'reviewing' | 'proposal' | 'applied' | 'won' | 'lost';
+export interface AgencyLead {
+  id: number;
+  title: string;
+  client: string | null;
+  source: string | null;
+  sourceUrl: string | null;
+  budget: string | null;
+  deadline: string | null;
+  fit: string | null;
+  notes: string | null;
+  status: AgencyLeadStatus;
+  createdAt: number;
+  updatedAt: number;
+}
+
 /** A GitHub issue, normalized for the renderer (labels/assignees flattened to names). */
 export interface GHIssue {
   number: number;
@@ -860,6 +876,18 @@ const api = {
   /** Substring search over prompt text, most-recent-first. */
   historySearch: (query: string, limit?: number): Promise<CommandHistoryEntry[]> =>
     ipcRenderer.invoke('history:search', query, limit),
+  // ─── Advertising Agency leads (SQLite) ────────────────────────────────────
+  leadsList: (): Promise<AgencyLead[]> => ipcRenderer.invoke('leads:list'),
+  leadsAdd: (lead: {
+    title: string; client?: string; source?: string; sourceUrl?: string;
+    budget?: string; deadline?: string; fit?: string; notes?: string;
+  }): Promise<{ ok: boolean; lead?: AgencyLead; error?: string }> =>
+    ipcRenderer.invoke('leads:add', lead),
+  leadsUpdate: (id: number, patch: Partial<AgencyLead>): Promise<{ ok: boolean; lead?: AgencyLead; error?: string }> =>
+    ipcRenderer.invoke('leads:update', id, patch),
+  leadsDelete: (id: number): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('leads:delete', id),
+
   hiveSend: (msg: Partial<HiveMessage>, from?: string): Promise<{ ok: boolean; error?: string; message?: HiveMessage }> =>
     ipcRenderer.invoke('hive:send', msg, from),
 
