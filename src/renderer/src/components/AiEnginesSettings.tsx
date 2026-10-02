@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { HarnessConfig, AgentProvider } from '@/store/config';
 import { PixelButton } from './PixelButton';
 import { ProviderLogo } from './ProviderLogo';
-import { OSS_BLOG_LINKS } from '@shared/ossModels';
+import { localSlugFor } from '@shared/ossModels';
 import { useStore } from '@/store/store';
 
 /**
@@ -58,7 +58,6 @@ const headStyle: CSSProperties = {
   fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
   color: 'var(--cth-ink-500)', textTransform: 'uppercase', marginBottom: 2
 };
-const linkStyle: CSSProperties = { color: 'var(--cth-ink-900)', textDecoration: 'underline', cursor: 'pointer' };
 
 export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
   const { t } = useTranslation();
@@ -78,6 +77,15 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
   const [models, setModels] = useState<Partial<Record<AgentProvider, string>>>(
     config.providerDefaultModels ?? {}
   );
+
+  // First-class Ollama manager. Model operations stay in main and are restricted
+  // to loopback; the renderer receives names/metadata only.
+  const [ollamaUrl, setOllamaUrl] = useState('http://localhost:11434');
+  const [ollamaModels, setOllamaModels] = useState<Array<{ name: string; size?: number; modifiedAt?: string }>>([]);
+  const [ollamaModel, setOllamaModel] = useState('');
+  const [ollamaNote, setOllamaNote] = useState('');
+  const [ollamaBusy, setOllamaBusy] = useState(false);
+  const [localEngine, setLocalEngine] = useState<AgentProvider>('opencode');
 
   // Reseed set/not-set flags on mount (write-only — only the boolean is fetched).
   useEffect(() => {
@@ -127,6 +135,63 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
     try { await window.cth.updateConfig({ providerDefaultModels: next }); } catch { /* noop */ }
   };
 
+  const refreshOllama = async () => {
+    setOllamaBusy(true);
+    setOllamaNote('Checking Ollama…');
+    try {
+      const r = await window.cth.localOllamaList(ollamaUrl);
+      if (r.ok) {
+        setOllamaModels(r.models ?? []);
+        setOllamaNote(`Connected · ${r.models?.length ?? 0} model${(r.models?.length ?? 0) === 1 ? '' : 's'} installed`);
+      } else {
+        setOllamaModels([]);
+        setOllamaNote(r.error ?? 'Could not connect to Ollama');
+      }
+    } catch (e) {
+      setOllamaModels([]);
+      setOllamaNote(e instanceof Error ? e.message : String(e));
+    } finally {
+      setOllamaBusy(false);
+    }
+  };
+
+  const pullOllama = async () => {
+    const model = ollamaModel.trim();
+    if (!model) { setOllamaNote('Enter an Ollama model name first.'); return; }
+    setOllamaBusy(true);
+    setOllamaNote(`Downloading ${model}… this can take a while.`);
+    try {
+      const r = await window.cth.localOllamaPull({ baseUrl: ollamaUrl, model });
+      if (!r.ok) { setOllamaNote(r.error ?? 'Download failed'); return; }
+      setOllamaModel('');
+      setOllamaNote(`${model} installed.`);
+      const listed = await window.cth.localOllamaList(ollamaUrl);
+      if (listed.ok) setOllamaModels(listed.models ?? []);
+    } catch (e) {
+      setOllamaNote(e instanceof Error ? e.message : String(e));
+    } finally {
+      setOllamaBusy(false);
+    }
+  };
+
+  const useOllamaModel = async (model: string) => {
+    if (!['opencode', 'crush', 'pi'].includes(localEngine)) return;
+    const base = ollamaUrl.trim().replace(/\/$/, '').replace(/\/v1$/, '') + '/v1';
+    const slug = localSlugFor(localEngine, model);
+    const nextUrls = { ...baseUrls, [localEngine]: base };
+    const nextModels = { ...models, [localEngine]: slug };
+    setBaseUrls(nextUrls);
+    setModels(nextModels);
+    await window.cth.updateConfig({ providerBaseUrls: nextUrls, providerDefaultModels: nextModels });
+    setOllamaNote(`${model} is now the default for ${localEngine}.`);
+  };
+
+  const formatBytes = (n?: number) => {
+    if (!n || n < 1) return '';
+    const gb = n / (1024 ** 3);
+    return gb >= 1 ? `${gb.toFixed(gb >= 10 ? 0 : 1)} GB` : `${Math.round(n / (1024 ** 2))} MB`;
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div>
@@ -174,33 +239,95 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
             <div style={{ display: 'flex', gap: 6 }}>
               <input
                 placeholder={`base-URL — ${c.hint}`}
-                defaultValue={baseUrls[c.id] ?? ''}
+                value={baseUrls[c.id] ?? ''}
+                onChange={(e) => setBaseUrls((s) => ({ ...s, [c.id]: e.target.value }))}
                 onBlur={(e) => saveBaseUrl(c.id, e.target.value)}
                 style={inputStyle}
               />
               <input
                 placeholder={t('aiEngines.defaultModelPlaceholder')}
-                defaultValue={models[c.id] ?? ''}
+                value={models[c.id] ?? ''}
+                onChange={(e) => setModels((s) => ({ ...s, [c.id]: e.target.value }))}
                 onBlur={(e) => saveModel(c.id, e.target.value)}
                 style={{ ...inputStyle, maxWidth: 220 }}
               />
             </div>
           </div>
         ))}
-        {/* Local-setup guides (ondev-c part-3) — link the two how-to blogs. */}
-        <div style={{ fontSize: 12, color: 'var(--cth-ink-700)', lineHeight: '17px' }}>
-          {t('aiEngines.runningOpenModels')}{' '}
-          <a
-            href={OSS_BLOG_LINKS.openModels}
-            onClick={(e) => { e.preventDefault(); void window.cth.openExternal(OSS_BLOG_LINKS.openModels); }}
-            style={linkStyle}
-          >{t('aiEngines.runOnOpenModels')}</a>
-          {' '}·{' '}
-          <a
-            href={OSS_BLOG_LINKS.macMini}
-            onClick={(e) => { e.preventDefault(); void window.cth.openExternal(OSS_BLOG_LINKS.macMini); }}
-            style={linkStyle}
-          >{t('aiEngines.setUpMacMini')}</a>.
+        <div style={{
+          marginTop: 4, padding: 10, display: 'flex', flexDirection: 'column', gap: 9,
+          background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)'
+        }}>
+          <div>
+            <div style={headStyle}>Local AI · Ollama</div>
+            <div style={{ fontSize: 12, color: 'var(--cth-ink-700)', lineHeight: '17px' }}>
+              Connect to Ollama running on this computer, see installed models, download another model, and assign it as an agent-engine default.
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input
+              value={ollamaUrl}
+              onChange={(e) => setOllamaUrl(e.target.value)}
+              placeholder="http://localhost:11434"
+              style={inputStyle}
+            />
+            <PixelButton variant="secondary" size="sm" onClick={refreshOllama} disabled={ollamaBusy}>
+              {ollamaBusy ? 'Working…' : 'Connect / Refresh'}
+            </PixelButton>
+          </div>
+
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={labelStyle}>Use local models with</span>
+            {(['opencode', 'crush', 'pi'] as AgentProvider[]).map((id) => (
+              <button
+                key={id}
+                onClick={() => setLocalEngine(id)}
+                style={{
+                  padding: '3px 8px 1px', border: 'none', cursor: 'pointer',
+                  background: localEngine === id ? 'var(--cth-mint-light)' : 'var(--cth-cream-100)',
+                  boxShadow: localEngine === id
+                    ? 'inset 0 0 0 1.5px var(--cth-ink-500)'
+                    : 'inset 0 0 0 1px var(--cth-ink-100)',
+                  fontFamily: 'var(--cth-font-ui)', fontSize: 12, color: 'var(--cth-ink-900)'
+                }}
+              >
+                {CLIS.find((x) => x.id === id)?.label ?? id}
+              </button>
+            ))}
+          </div>
+
+          {ollamaModels.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {ollamaModels.map((m) => (
+                <div key={m.name} style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '5px 7px',
+                  background: 'var(--cth-cream-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)'
+                }}>
+                  <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--cth-font-mono)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {m.name}
+                  </span>
+                  {m.size ? <span style={{ fontSize: 11, color: 'var(--cth-ink-500)' }}>{formatBytes(m.size)}</span> : null}
+                  <PixelButton variant="secondary" size="sm" onClick={() => void useOllamaModel(m.name)}>
+                    Use
+                  </PixelButton>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input
+              value={ollamaModel}
+              onChange={(e) => setOllamaModel(e.target.value)}
+              placeholder="Add model, e.g. qwen3:8b"
+              style={inputStyle}
+            />
+            <PixelButton variant="secondary" size="sm" onClick={pullOllama} disabled={ollamaBusy || !ollamaModel.trim()}>
+              Download
+            </PixelButton>
+          </div>
+          {ollamaNote && <div style={{ fontSize: 11, color: 'var(--cth-ink-500)' }}>{ollamaNote}</div>}
         </div>
       </div>
 
