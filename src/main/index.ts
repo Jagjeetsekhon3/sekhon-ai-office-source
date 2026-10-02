@@ -3149,6 +3149,70 @@ ipcMain.handle('integrations:remove', (_evt, payload: unknown) => {
   if (typeof p.id !== 'string' || !p.id) return { ok: false, error: 'id required' };
   return integrations.removeRecord(p.id);
 });
+// ─── IPC: local model manager (Ollama, loopback-only) ────────────────────────
+// Model management is deliberately HTTP-only: never interpolate a model name into
+// a shell command. The endpoint must resolve to loopback, so this UI cannot be
+// turned into an arbitrary-network fetch surface.
+function localOllamaRoot(raw: unknown): { ok: true; url: URL } | { ok: false; error: string } {
+  if (typeof raw !== 'string' || !raw.trim()) return { ok: false, error: 'Ollama URL required' };
+  let u: URL;
+  try { u = new URL(raw.trim()); } catch { return { ok: false, error: 'invalid Ollama URL' }; }
+  const host = u.hostname.toLowerCase();
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return { ok: false, error: 'Ollama URL must use http or https' };
+  if (host !== 'localhost' && host !== '127.0.0.1' && host !== '::1' && host !== '[::1]') {
+    return { ok: false, error: 'local model manager only connects to this computer' };
+  }
+  u.pathname = u.pathname.replace(/\/v1\/?$/, '').replace(/\/$/, '');
+  u.search = '';
+  u.hash = '';
+  return { ok: true, url: u };
+}
+function ollamaUrl(root: URL, path: string): string {
+  return root.toString().replace(/\/$/, '') + path;
+}
+
+ipcMain.handle('localModels:ollamaList', async (_evt, rawUrl: unknown) => {
+  const root = localOllamaRoot(rawUrl);
+  if (!root.ok) return root;
+  try {
+    const res = await fetch(ollamaUrl(root.url, '/api/tags'), { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return { ok: false, error: `Ollama returned HTTP ${res.status}` };
+    const data = await res.json() as { models?: Array<{ name?: unknown; size?: unknown; modified_at?: unknown }> };
+    const models = Array.isArray(data.models) ? data.models
+      .filter((m) => typeof m?.name === 'string')
+      .map((m) => ({
+        name: String(m.name),
+        size: typeof m.size === 'number' ? m.size : undefined,
+        modifiedAt: typeof m.modified_at === 'string' ? m.modified_at : undefined
+      })) : [];
+    return { ok: true, models };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+});
+
+ipcMain.handle('localModels:ollamaPull', async (_evt, payload: unknown) => {
+  const p = (payload ?? {}) as { baseUrl?: unknown; model?: unknown };
+  const root = localOllamaRoot(p.baseUrl);
+  if (!root.ok) return root;
+  const model = typeof p.model === 'string' ? p.model.trim() : '';
+  if (!model || model.length > 160 || !/^[A-Za-z0-9._:\/-]+$/.test(model)) {
+    return { ok: false, error: 'invalid model name' };
+  }
+  try {
+    const res = await fetch(ollamaUrl(root.url, '/api/pull'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model, stream: false }),
+      signal: AbortSignal.timeout(30 * 60 * 1000)
+    });
+    if (!res.ok) return { ok: false, error: `Ollama returned HTTP ${res.status}` };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+});
+
 // ─── IPC: per-CLI-provider BYOK keys (write-only) ────────────────────────────
 // API keys for the backend model-providers the non-Claude CLIs use are stored
 // WRITE-ONLY under `apikey:<backend>` in the same encrypted broker. The renderer
