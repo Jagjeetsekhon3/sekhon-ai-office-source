@@ -148,7 +148,7 @@ test('every published hire manifest passes both validators', () => {
 });
 
 test('every runtime provider and allowlisted capability id passes the gallery validator', () => {
-  for (const provider of ['claude', 'antigravity', 'agy', 'codex', 'cursor']) {
+  for (const provider of ['claude', 'antigravity', 'agy', 'codex', 'cursor', 'sekhon-local']) {
     assert.equal(validateInGallery(manifest({ provider })).ok, true, `provider ${provider}`);
   }
   for (const skill of BUNDLED_SKILL_IDS) {
