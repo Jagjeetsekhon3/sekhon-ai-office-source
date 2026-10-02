@@ -868,7 +868,11 @@ export class HiveManager {
       if (desc && sock) {
         env.HIVE_SOCK = sock;
         try {
-          if (desc.kind === 'hooks') {
+          if (desc.kind === 'native') {
+            // Built-in providers emit lifecycle payloads themselves. They only need
+            // the socket address; there is no hook file or proxy sidecar to install.
+          }
+          else if (desc.kind === 'hooks') {
             if (desc.shim === 'agy') this.installAgyHooks();
             else if (desc.shim === 'codex') {
               env.CODEX_HOME = this.installCodexHooks(dir, meta.id);
