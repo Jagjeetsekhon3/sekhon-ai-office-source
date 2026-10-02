@@ -251,7 +251,23 @@ async function main() {
   process.stdout.write('Model: ' + MODEL + '\r\nServer: ' + BASE + '\r\n');
   process.stdout.write('Tools: ' + (AUTO ? 'read/write/shell (Auto mode)' : 'read-only') + '\r\n\r\n');
   await hook({ hook_event_name: 'SessionStart' }, false);
+  // Keep the built-in local agent alive explicitly. On Windows/node-pty,
+  // readline alone can lose its active handle after startup and Electron's
+  // Node runtime then exits cleanly before the office can deliver queued input.
+  process.stdin.resume();
+  const keepAlive = setInterval(() => {}, 60_000);
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true, prompt: '> ' });
+  const shutdown = () => {
+    clearInterval(keepAlive);
+    try { rl.close(); } catch (_) {}
+  };
+  process.once('SIGINT', shutdown);
+  process.once('SIGTERM', shutdown);
+  rl.once('close', () => {
+    // PTY/input closed by the office: release the explicit keepalive so the
+    // process can terminate normally.
+    clearInterval(keepAlive);
+  });
   let busy = false;
   rl.prompt();
   rl.on('line', async (line) => {
