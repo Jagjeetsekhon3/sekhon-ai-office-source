@@ -13,6 +13,7 @@ import { MemoryPanel } from '@/components/MemoryPanel';
 import { AgentDetailPanel } from '@/components/AgentDetailPanel';
 import { AgentStrip } from '@/components/AgentStrip';
 import { AddAgentModal } from '@/components/AddAgentModal';
+import { LeadsBoardModal } from '@/components/LeadsBoardModal';
 import { MichaelBooting } from '@/components/MichaelBooting';
 import { OnboardingWizard } from '@/components/OnboardingWizard';
 import { HivePicker } from '@/components/HivePicker';
@@ -81,6 +82,7 @@ export function App() {
     return false;
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [leadsOpen, setLeadsOpen] = useState(false);
   /** Which tab Settings opens on. Set by a `cth:open-settings` deep link, reset
    *  to undefined (→ General) whenever the modal is opened the normal way. */
   const [settingsSection, setSettingsSection] = useState<SettingsSection | undefined>(undefined);
@@ -342,6 +344,20 @@ export function App() {
             </button>
           ))}
         </div>
+        {businessWorkspace === 'agency' && (
+          <button
+            className="cth-titlebar-nodrag"
+            onClick={() => setLeadsOpen(true)}
+            style={{
+              border: 'none', cursor: 'pointer', padding: '4px 7px 3px',
+              fontFamily: 'var(--cth-font-display)', fontSize: 7,
+              color: 'var(--cth-ink-900)', background: 'var(--cth-paper-100)',
+              boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)'
+            }}
+          >
+            LEADS
+          </button>
+        )}
         {/* v0.3.7: the version is no longer inert text — it doubles as the
             update control (check / download / restart to update). */}
         <UpdateBadge />
@@ -529,6 +545,8 @@ export function App() {
           onConfigChange={setConfig}
         />
       )}
+
+      {leadsOpen && <LeadsBoardModal onClose={() => setLeadsOpen(false)} />}
 
       {settingsOpen && (
         <SettingsModal
