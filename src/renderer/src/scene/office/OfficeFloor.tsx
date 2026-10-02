@@ -288,6 +288,71 @@ export function OfficeFloor() {
       const mapRenderer = new TiledMapRenderer(resolveThemeMap(theme), tilesetTextures);
       world.addChild(mapRenderer.getContainer());
       const charLayer = mapRenderer.getCharacterContainer();
+
+      // ─── Sekhon AI Office visual layer ─────────────────────────────────────
+      // Keep the proven Tiled geometry/collision map intact and brand the scene
+      // procedurally. This changes the look without touching pathfinding, desks,
+      // spawn points or interactive anchors, so visual iteration cannot strand
+      // agents or break the office simulation.
+      const brand = new Graphics();
+      brand.eventMode = 'none';
+      brand.zIndex = 1;
+      const bts = mapRenderer.tileSize;
+
+      // CEO / orchestrator office: cool glass-tech wash + teal threshold.
+      brand
+        .rect(1 * bts, 3 * bts, 7 * bts, 5 * bts)
+        .fill({ color: 0x12333a, alpha: 0.12 });
+      brand
+        .rect(1 * bts, 7 * bts + 13, 7 * bts, 3)
+        .fill({ color: 0x61d6c5, alpha: 0.9 });
+
+      // Main work floor: subtle cyan spine to visually connect the agent desks.
+      brand
+        .rect(1 * bts, 11 * bts + 6, 22 * bts, 2)
+        .fill({ color: 0x61d6c5, alpha: 0.35 });
+      brand
+        .rect(1 * bts, 16 * bts + 6, 22 * bts, 2)
+        .fill({ color: 0x61d6c5, alpha: 0.22 });
+
+      // Boardroom / planning zone accent.
+      brand
+        .rect(9 * bts, 3 * bts, 9 * bts, 5 * bts)
+        .fill({ color: 0x6f7dff, alpha: 0.07 });
+      brand
+        .rect(9 * bts, 3 * bts, 9 * bts, 2)
+        .fill({ color: 0x8792ff, alpha: 0.85 });
+
+      // Café / recharge zone accent.
+      brand
+        .rect(24 * bts, 12 * bts, 8 * bts, 8 * bts)
+        .fill({ color: 0x50c49c, alpha: 0.07 });
+      brand
+        .rect(24 * bts, 12 * bts, 2, 8 * bts)
+        .fill({ color: 0x61d6c5, alpha: 0.7 });
+
+      // Entrance welcome mat + a tiny pixel "SA" monogram. Drawn in code so it
+      // is original, resolution-independent and carries no third-party asset.
+      const ex = 14 * bts + 4;
+      const ey = 19 * bts + 4;
+      brand.rect(ex, ey, 60, 12).fill({ color: 0x13272d, alpha: 0.92 });
+      brand.rect(ex, ey, 60, 2).fill(0x61d6c5);
+      brand.rect(ex + 5, ey + 4, 10, 2).fill(0xf4fbfa);
+      brand.rect(ex + 5, ey + 4, 2, 4).fill(0xf4fbfa);
+      brand.rect(ex + 5, ey + 8, 10, 2).fill(0xf4fbfa);
+      brand.rect(ex + 13, ey + 6, 2, 4).fill(0xf4fbfa);
+      brand.rect(ex + 20, ey + 4, 2, 6).fill(0x61d6c5);
+      brand.rect(ex + 28, ey + 4, 2, 6).fill(0x61d6c5);
+      brand.rect(ex + 22, ey + 4, 6, 2).fill(0x61d6c5);
+      brand.rect(ex + 22, ey + 6, 6, 2).fill(0x61d6c5);
+
+      // Small data-light markers around the work floor give the room a more
+      // modern AI-lab identity while staying clear of desks and click targets.
+      for (const [x, y] of [[8, 10], [14, 10], [20, 10], [8, 15], [14, 15], [20, 15]] as const) {
+        brand.circle(x * bts + 8, y * bts + 8, 1.5).fill({ color: 0x7df3df, alpha: 0.9 });
+      }
+
+      charLayer.addChild(brand);
       const tileCount = mapRenderer.getContainer().children.reduce(
         (n, c) => n + ((c as Container).children?.length ?? 0), 0);
       console.log(`[OfficeFloor] map ${mapRenderer.width}x${mapRenderer.height}, ${tileCount} tile sprites rendered`);
