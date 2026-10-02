@@ -31,12 +31,20 @@ import { FullscreenTerminal } from '@/components/FullscreenTerminal';
 import { TaskDetailOverlay } from '@/components/TaskDetailOverlay';
 import { IdePanel } from '@/ide/IdePanel';
 import { useHoldOptionToTalk } from '@/freeflow/holdOption';
-import brandLogo from '@brand/logo.png?url';
 
 // Injected at build time from package.json (see electron.vite.config.ts).
 declare const __APP_VERSION__: string;
 
 export function App() {
+  const [businessWorkspace, setBusinessWorkspace] = useState<'studio' | 'agency'>(() => {
+    try { return window.localStorage.getItem('sekhon.businessWorkspace') === 'agency' ? 'agency' : 'studio'; }
+    catch { return 'studio'; }
+  });
+  const chooseBusinessWorkspace = (next: 'studio' | 'agency') => {
+    setBusinessWorkspace(next);
+    try { window.localStorage.setItem('sekhon.businessWorkspace', next); } catch { /* noop */ }
+  };
+
   // Point every {{godName}} string at the orchestrator's real, renameable name.
   useGodNameSync();
   // Mirror the document only for a user who has picked an RTL app language.
@@ -295,11 +303,45 @@ export function App() {
           userSelect: 'none'
         }}
       >
-        <img
-          src={brandLogo}
-          alt="Munder Difflin"
-          style={{ height: 20, width: 'auto', display: 'block' }}
-        />
+        <div
+          className="cth-titlebar-nodrag"
+          aria-label="Sekhon AI Office"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 7,
+            fontFamily: 'var(--cth-font-display)', fontSize: 9,
+            color: 'var(--cth-ink-900)', letterSpacing: '0.02em'
+          }}
+        >
+          <span style={{
+            width: 22, height: 22, display: 'grid', placeItems: 'center',
+            background: '#15242b', color: '#7df3df',
+            boxShadow: 'inset 0 0 0 2px #61d6c5', fontSize: 8
+          }}>SA</span>
+          <span>SEKHON AI OFFICE</span>
+        </div>
+        <div className="cth-titlebar-nodrag" style={{ display: 'inline-flex', gap: 3 }}>
+          {([
+            ['studio', '3D STUDIO'],
+            ['agency', 'AGENCY']
+          ] as const).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => chooseBusinessWorkspace(id)}
+              aria-pressed={businessWorkspace === id}
+              style={{
+                border: 'none', cursor: 'pointer', padding: '4px 7px 3px',
+                fontFamily: 'var(--cth-font-display)', fontSize: 7,
+                color: 'var(--cth-ink-900)',
+                background: businessWorkspace === id ? 'var(--cth-mint-light)' : 'var(--cth-paper-100)',
+                boxShadow: businessWorkspace === id
+                  ? 'inset 0 0 0 1.5px var(--cth-ink-500)'
+                  : 'inset 0 0 0 1px var(--cth-ink-300)'
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         {/* v0.3.7: the version is no longer inert text — it doubles as the
             update control (check / download / restart to update). */}
         <UpdateBadge />
@@ -483,6 +525,7 @@ export function App() {
         <AddAgentModal
           onClose={closeAddAgentReview}
           config={config}
+          businessWorkspace={businessWorkspace}
           onConfigChange={setConfig}
         />
       )}
