@@ -19,7 +19,7 @@ function arg(name) {
   return i >= 0 ? process.argv[i + 1] : undefined;
 }
 const MODEL = arg('--model') || process.env.SEKHON_LOCAL_MODEL || '';
-const BASE = (process.env.SEKHON_LOCAL_BASE_URL || 'http://localhost:11434/v1').replace(/\\\/$/, '');
+const BASE = (process.env.SEKHON_LOCAL_BASE_URL || 'http://localhost:11434/v1').replace(/\\/$/, '');
 const SYSTEM = arg('--system') || 'You are a helpful local AI agent inside Sekhon AI Office.';
 const AUTO = process.env.SEKHON_LOCAL_AUTO === '1';
 const AGENT = process.env.AGENT_ID || 'local-agent';
@@ -36,7 +36,7 @@ function insideAllowed(p) {
 }
 function clip(v, n) {
   const s = String(v == null ? '' : v);
-  return s.length > n ? s.slice(0, n) + '\\n...[truncated]' : s;
+  return s.length > n ? s.slice(0, n) + '\n...[truncated]' : s;
 }
 function hook(payload, waitForReply) {
   return new Promise((resolve) => {
@@ -54,7 +54,7 @@ function hook(payload, waitForReply) {
       payload.session_id = SESSION;
       payload.cwd = CWD;
       const c = net.createConnection(sock, () => {
-        c.write(JSON.stringify(payload) + '\\n');
+        c.write(JSON.stringify(payload) + '\n');
         if (!waitForReply) c.end();
       });
       c.setEncoding('utf8');
@@ -124,7 +124,7 @@ async function executeTool(name, input) {
     } else if (name === 'list_files') {
       const dir = insideAllowed(input.path);
       result = fs.readdirSync(dir, { withFileTypes: true }).slice(0, 250)
-        .map((e) => (e.isDirectory() ? '[dir] ' : '[file] ') + e.name).join('\\n');
+        .map((e) => (e.isDirectory() ? '[dir] ' : '[file] ') + e.name).join('\n');
     } else if (name === 'write_file') {
       if (!AUTO) throw new Error('Auto mode is required for file writes');
       const dest = insideAllowed(input.path);
@@ -191,7 +191,7 @@ async function runTurn(text) {
     const calls = Array.isArray(msg.tool_calls) ? msg.tool_calls : [];
     if (!calls.length) {
       const answer = msg.content == null ? '' : String(msg.content);
-      process.stdout.write('\\r\\n' + answer + '\\r\\n');
+      process.stdout.write('\r\n' + answer + '\r\n');
       const stop = await hook({ hook_event_name: 'Stop' }, true);
       if (stop && stop.decision === 'block' && stop.reason) {
         messages.push({ role: 'user', content: String(stop.reason) });
@@ -203,12 +203,12 @@ async function runTurn(text) {
       const fn = call && call.function ? call.function : {};
       let input = {};
       try { input = JSON.parse(fn.arguments || '{}'); } catch (_) {}
-      process.stdout.write('\\r\\n[tool] ' + String(fn.name || 'unknown') + '\\r\\n');
+      process.stdout.write('\r\n[tool] ' + String(fn.name || 'unknown') + '\r\n');
       const output = await executeTool(String(fn.name || ''), input);
       messages.push({ role: 'tool', tool_call_id: call.id, content: output });
     }
   }
-  process.stdout.write('\\r\\n[warning] Tool loop limit reached.\\r\\n');
+  process.stdout.write('\r\n[warning] Tool loop limit reached.\r\n');
   await hook({ hook_event_name: 'Stop' }, false);
 }
 
@@ -218,7 +218,7 @@ async function compactConversation(focus) {
     const role = m.role || 'unknown';
     const content = typeof m.content === 'string' ? m.content : '';
     return role + ': ' + content;
-  }).join('\\n');
+  }).join('\n');
   const request = {
     model: MODEL,
     messages: [
@@ -237,18 +237,18 @@ async function compactConversation(focus) {
   const data = await res.json();
   const summary = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
   if (!summary) throw new Error('Compaction returned no summary');
-  messages.splice(1, messages.length - 1, { role: 'system', content: 'Conversation memory:\\n' + String(summary) });
+  messages.splice(1, messages.length - 1, { role: 'system', content: 'Conversation memory:\n' + String(summary) });
   return 'Context compacted.';
 }
 
 async function main() {
   if (!MODEL) {
-    process.stderr.write('Sekhon Local: no model selected. Open Settings > Agents & Models, connect a local server, then choose Use.\\r\\n');
+    process.stderr.write('Sekhon Local: no model selected. Open Settings > Agents & Models, connect a local server, then choose Use.\r\n');
     process.exit(2);
   }
-  process.stdout.write('Sekhon Local Agent\\r\\n');
-  process.stdout.write('Model: ' + MODEL + '\\r\\nServer: ' + BASE + '\\r\\n');
-  process.stdout.write('Tools: ' + (AUTO ? 'read/write/shell (Auto mode)' : 'read-only') + '\\r\\n\\r\\n');
+  process.stdout.write('Sekhon Local Agent\r\n');
+  process.stdout.write('Model: ' + MODEL + '\r\nServer: ' + BASE + '\r\n');
+  process.stdout.write('Tools: ' + (AUTO ? 'read/write/shell (Auto mode)' : 'read-only') + '\r\n\r\n');
   await hook({ hook_event_name: 'SessionStart' }, false);
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true, prompt: '> ' });
   let busy = false;
@@ -258,28 +258,28 @@ async function main() {
     if (!text) { rl.prompt(); return; }
     if (text === '/clear') {
       messages.splice(1);
-      process.stdout.write('Context cleared.\\r\\n');
+      process.stdout.write('Context cleared.\r\n');
       rl.prompt();
       return;
     }
     if (text === '/compact' || text.startsWith('/compact ')) {
       busy = true;
-      try { process.stdout.write((await compactConversation(text.slice('/compact'.length).trim())) + '\\r\\n'); }
-      catch (e) { process.stderr.write('[compact error] ' + (e && e.message ? e.message : String(e)) + '\\r\\n'); }
+      try { process.stdout.write((await compactConversation(text.slice('/compact'.length).trim())) + '\r\n'); }
+      catch (e) { process.stderr.write('[compact error] ' + (e && e.message ? e.message : String(e)) + '\r\n'); }
       busy = false;
       rl.prompt();
       return;
     }
-    if (busy) { process.stdout.write('Agent is still working.\\r\\n'); rl.prompt(); return; }
+    if (busy) { process.stdout.write('Agent is still working.\r\n'); rl.prompt(); return; }
     busy = true;
     try { await runTurn(text); }
-    catch (e) { process.stderr.write('\\r\\n[local agent error] ' + (e && e.message ? e.message : String(e)) + '\\r\\n'); }
+    catch (e) { process.stderr.write('\r\n[local agent error] ' + (e && e.message ? e.message : String(e)) + '\r\n'); }
     busy = false;
     rl.prompt();
   });
 }
 main().catch((e) => {
-  process.stderr.write('Sekhon Local failed: ' + (e && e.message ? e.message : String(e)) + '\\r\\n');
+  process.stderr.write('Sekhon Local failed: ' + (e && e.message ? e.message : String(e)) + '\r\n');
   process.exit(1);
 });
 `;
