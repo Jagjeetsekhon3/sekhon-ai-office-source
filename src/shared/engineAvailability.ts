@@ -39,6 +39,10 @@ export function classifyEngineAvailability(
   statuses: readonly ToolStatus[] | undefined,
   provider: AgentProvider
 ): EngineAvailability {
+  // Sekhon Local is bundled inside the Electron app and intentionally has no
+  // standalone executable on PATH. Treat it as installed before consulting the
+  // external CLI catalog.
+  if (provider === 'sekhon-local') return { state: 'installed', path: null, installCommand: '' };
   const row = statuses?.find((s) => s.id === `engine:${provider}`);
   if (!row) return { state: 'unknown', path: null, installCommand: '' };
   const installCommand = row.installCommand ?? '';
