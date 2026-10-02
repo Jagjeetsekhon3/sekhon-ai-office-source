@@ -1,6 +1,6 @@
-appId: in.munderdiffl.app
-productName: Munder Difflin
-copyright: Copyright © 2026 Chaitanya Giri
+appId: in.sekhon.aioffice
+productName: Sekhon AI Office
+copyright: Copyright © 2026 Sekhon AI Office contributors
 
 # Where electron-updater looks for new versions (latest*.yml + assets on GitHub
 # releases). The release workflow still uploads assets itself (--publish never);
@@ -8,8 +8,8 @@ copyright: Copyright © 2026 Chaitanya Giri
 # knows which repo to poll.
 publish:
   provider: github
-  owner: chaitanyagiri
-  repo: munder-difflin
+  owner: Jagjeetsekhon3
+  repo: sekhon-ai-office-source
 
 # Bake the update toast's "What's new" list straight into latest*.yml.
 #
@@ -38,9 +38,9 @@ afterSign: build/notarize.cjs
 # Register the munderdifflin:// URL scheme (shareable-hires deep link) in the
 # packaged app: CFBundleURLTypes on macOS, registry entries via NSIS on Windows.
 protocols:
-  - name: Munder Difflin
+  - name: Sekhon AI Office
     schemes:
-      - munderdifflin
+      - sekhonaioffice
 
 # electron-vite emits the app into out/; package exactly that plus what the
 # runtime needs. node-pty is native, so keep it out of the asar.
@@ -130,10 +130,10 @@ mac:
       arch: [universal]
     - target: zip
       arch: [universal]
-  artifactName: Munder-Difflin-${version}-mac-${arch}.${ext}
+  artifactName: Sekhon-AI-Office-${version}-mac-${arch}.${ext}
 
 dmg:
-  title: Munder Difflin ${version}
+  title: Sekhon AI Office ${version}
 
 # ---- Windows ----
 win:
@@ -148,11 +148,11 @@ nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
-  artifactName: Munder-Difflin-${version}-win-x64-setup.exe
-  shortcutName: Munder Difflin
+  artifactName: Sekhon-AI-Office-${version}-win-x64-setup.exe
+  shortcutName: Sekhon AI Office
 
 portable:
-  artifactName: Munder-Difflin-${version}-win-x64-portable.exe
+  artifactName: Sekhon-AI-Office-${version}-win-x64-portable.exe
 
 # ---- Linux ----
 linux:
@@ -161,4 +161,4 @@ linux:
   target:
     - target: AppImage
       arch: [x64]
-  artifactName: Munder-Difflin-${version}-linux-x86_64.AppImage
+  artifactName: Sekhon-AI-Office-${version}-linux-x86_64.AppImage
