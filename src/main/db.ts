@@ -198,18 +198,7 @@ export class PersistStore {
     if (!q) return [];
     const lim = clampLimit(limit, 50);
     // Escape LIKE wildcards so a literal % or _ in the query isn't a metachar.
-    const needle = `%${q.replace(/[\\%_]/g, '\\  searchHistory(query: string, limit = 50): CommandHistoryRow[] {
-    if (!this.db) return [];
-    const q = (query ?? '').trim();
-    if (!q) return [];
-    const lim = clampLimit(limit, 50);
-    // Escape LIKE wildcards so a literal % or _ in the query isn't a metachar.
     const needle = `%${q.replace(/[\\%_]/g, '\\$&')}%`;
-    return this.db.prepare(
-      "SELECT id, agent_id AS agentId, cwd, text, ts FROM command_history WHERE text LIKE ? ESCAPE '\\' ORDER BY ts DESC, id DESC LIMIT ?"
-    ).all(needle, lim) as CommandHistoryRow[];
-  }
-}')}%`;
     return this.db.prepare(
       "SELECT id, agent_id AS agentId, cwd, text, ts FROM command_history WHERE text LIKE ? ESCAPE '\\' ORDER BY ts DESC, id DESC LIMIT ?"
     ).all(needle, lim) as CommandHistoryRow[];
