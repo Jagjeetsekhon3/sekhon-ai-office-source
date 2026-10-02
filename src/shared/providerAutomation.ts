@@ -144,6 +144,10 @@ const CONTEXT_COMMANDS: Record<AgentProvider, ProviderContextCommands> = {
   // auto-compact. Revisit when a shipped command table is transcribed.
   cursor: NO_CONTEXT_COMMANDS,
 
+  // Built-in Sekhon Local owns its REPL, so these commands are stable app
+  // contracts rather than guesses about a third-party CLI.
+  'sekhon-local': { compact: '/compact', clear: '/clear', compactTakesFocus: true },
+
   // An arbitrary user binary. We cannot know its command surface, and guessing
   // means typing slashes into someone's unknown REPL.
   custom: NO_CONTEXT_COMMANDS
