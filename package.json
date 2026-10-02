@@ -1,14 +1,14 @@
 {
-  "name": "munder-difflin",
+  "name": "sekhon-ai-office",
   "version": "0.4.6",
   "private": true,
-  "description": "Clones for you and your team, working 24/7 — a free, local-first multi-agent harness that turns the CLI coding agent you already run into a clone of you, coordinating an office of agents on your machine.",
+  "description": "Sekhon AI Office — a local-first multi-agent desktop workspace for running and coordinating AI agents with your own providers and models.",
   "main": "out/main/index.js",
-  "author": "Chaitanya Giri",
-  "homepage": "https://munderdiffl.in/",
+  "author": "Jagjeet Singh",
+  "homepage": "https://github.com/Jagjeetsekhon3/sekhon-ai-office-source",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chaitanyagiri/munder-difflin.git"
+    "url": "https://github.com/Jagjeetsekhon3/sekhon-ai-office-source.git"
   },
   "scripts": {
     "dev": "electron-vite dev",
