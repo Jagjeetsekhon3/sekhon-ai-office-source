@@ -109,6 +109,32 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   );
   const [error, setError] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
+  const [localModels, setLocalModels] = useState<string[]>([]);
+  const [localModelNote, setLocalModelNote] = useState('');
+
+  const discoverSekhonLocal = async () => {
+    setLocalModelNote('Checking Ollama on this computer…');
+    try {
+      const r = await window.cth.localOllamaList('http://localhost:11434');
+      if (!r.ok) {
+        setLocalModels([]);
+        setLocalModelNote(r.error ?? 'Ollama is not reachable.');
+        return;
+      }
+      const names = (r.models ?? []).map((m) => m.name).filter(Boolean);
+      setLocalModels(names);
+      if (names.length) {
+        setGodModel((current) => current && names.includes(current) ? current : names[0]);
+        setLocalModelNote(`${names.length} local model${names.length === 1 ? '' : 's'} found in Ollama.`);
+      } else {
+        setGodModel(undefined);
+        setLocalModelNote('Ollama is running, but no models are installed yet.');
+      }
+    } catch (e) {
+      setLocalModels([]);
+      setLocalModelNote(e instanceof Error ? e.message : String(e));
+    }
+  };
 
   // Which engine CLIs are actually on this machine. The picker used to record the
   // choice blind; the first check happened when Michael spawned, and for a
@@ -442,9 +468,14 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                           checked={sel}
                           onChange={() => {
                             setGodProvider(p.id);
-                            // Reset the model to the new provider's recommended pick so the
-                            // dropdown below always shows a valid model for the chosen engine.
-                            setGodModel(p.recommendedOrchestratorModel);
+                            if (p.id === 'sekhon-local') {
+                              setGodModel(undefined);
+                              void discoverSekhonLocal();
+                            } else {
+                              // Reset the model to the new provider's recommended pick so the
+                              // dropdown below always shows a valid model for the chosen engine.
+                              setGodModel(p.recommendedOrchestratorModel);
+                            }
                           }}
                           style={{ width: 16, height: 16, flexShrink: 0 }}
                         />
@@ -552,13 +583,27 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                     onChange={(e) => setGodModel(e.target.value || undefined)}
                     style={inputStyle}
                   >
-                    {modelsForProvider(godProvider).map((m) => (
+                    {(godProvider === 'sekhon-local'
+                      ? localModels.map((id) => ({ id, label: id }))
+                      : modelsForProvider(godProvider)
+                    ).map((m) => (
                       <option key={m.label} value={m.id ?? ''}>{m.label}</option>
                     ))}
                   </select>
-                  <div style={{ fontSize: 12, color: 'var(--cth-ink-500)' }}>
-                    {t('onboarding.orchestrator.modelNote')}
-                  </div>
+                  {godProvider === 'sekhon-local' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 12, color: 'var(--cth-ink-500)' }}>
+                        {localModelNote || 'Select Sekhon Local to discover installed Ollama models.'}
+                      </span>
+                      <PixelButton variant="ghost" size="sm" onClick={() => { void discoverSekhonLocal(); }}>
+                        refresh local models
+                      </PixelButton>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 12, color: 'var(--cth-ink-500)' }}>
+                      {t('onboarding.orchestrator.modelNote')}
+                    </div>
+                  )}
                 </div>
               </>
             )}
