@@ -80,6 +80,7 @@ import {
   type AgentProvider
 } from '../shared/agentProvider';
 import { buildMissingCliScript, chooseInstallRung } from './cliInstall';
+import { SEKHON_LOCAL_AGENT_SCRIPT } from './sekhonLocalAgentScript';
 import { detectNodeVersion, nodeIsUsable, resolveNodeInstaller } from './nodeInstall';
 import { toolCatalog, type ToolStatus } from '../shared/toolCatalog';
 import { listLocalSkills, loadCatalog, installSkill, uninstallSkill, type LocalSkill } from './skills';
@@ -2648,6 +2649,33 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
   // the missing-CLI relaunch (the only re-entry, index.ts install-exit handler) does
   // NOT double-count a single user attempt — it is the SAME attempt continuing.
   if (!opts.noAutoInstall) analytics.track('agent_spawn_attempted', { provider });
+
+  // Sekhon Local is a built-in provider, not an external CLI. Materialize its
+  // small CommonJS runtime under userData and execute it with Electron's bundled
+  // Node runtime. This happens before missing-CLI detection so "sekhon-local" is
+  // never treated as a binary the user must install.
+  if (provider === 'sekhon-local') {
+    try {
+      const dir = join(app.getPath('userData'), 'sekhon-local');
+      const script = join(dir, 'agent.cjs');
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(script, SEKHON_LOCAL_AGENT_SCRIPT, 'utf8');
+      const cfg = readConfig();
+      const originalArgs = opts.args ?? [];
+      opts.command = process.execPath;
+      opts.args = [script, ...originalArgs];
+      opts.env = {
+        ...(opts.env ?? {}),
+        ELECTRON_RUN_AS_NODE: '1',
+        SEKHON_LOCAL_BASE_URL: cfg.providerBaseUrls?.['sekhon-local'] || 'http://localhost:11434/v1',
+        SEKHON_LOCAL_AUTO: cfg.autoMode ? '1' : '0'
+      };
+    } catch (e) {
+      const error = e instanceof Error ? e.message : String(e);
+      analytics.track('agent_spawn_failed', { provider, reason: 'spawn_error' });
+      return { ok: false as const, error: `Could not prepare Sekhon Local runtime: ${error}` };
+    }
+  }
   // ── Missing engine CLI → run its installer visibly (pre-spawn) ───────────────
   // If the agent's engine binary (claude/codex/…) isn't installed, spawning it
   // just dies with "— process exited (code 1) —" and the user has no idea why.
@@ -2665,7 +2693,7 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
   // isn't archived and no worktree is torn down) before the relaunch takes over.
   {
     const bin = opts.command.trim().split(/\s+/)[0] || opts.command;
-    if (bin && !opts.noAutoInstall && !ptyManager.isCommandAvailable(bin)) {
+    if (provider !== 'sekhon-local' && bin && !opts.noAutoInstall && !ptyManager.isCommandAvailable(bin)) {
       // The installer commands are `npm install -g …`. Probe for npm the same way
       // we probe for the engine CLI, so a no-Node machine gets the node-free rung
       // (or an honest manual hint) instead of watching `npm: not found` scroll by.
