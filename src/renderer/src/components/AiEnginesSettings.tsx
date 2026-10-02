@@ -30,6 +30,7 @@ const BACKENDS: Array<{ id: string; label: string; envVar: string }> = [
 /** CLI engines that take a per-provider local base-URL + default model. `hint`
  *  values are technical endpoint descriptions — kept English (technical data). */
 const CLIS: Array<{ id: AgentProvider; label: string; hint: string }> = [
+  { id: 'sekhon-local', label: 'Sekhon Local', hint: 'Built-in direct local agent · Ollama / LM Studio / vLLM' },
   { id: 'opencode', label: 'OpenCode', hint: 'http://localhost:11434/v1 (Ollama) — injected as a local provider' },
   { id: 'crush', label: 'Crush', hint: 'OpenAI-compatible endpoint — used as the proxy upstream' },
   { id: 'pi', label: 'Pi', hint: 'local models are file-based (models.json); base-URL reserved' },
@@ -181,13 +182,14 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
   };
 
   const localModelSlug = (engine: AgentProvider, model: string) => {
+    if (engine === 'sekhon-local') return model;
     if (engine === 'opencode') return `local/${model}`;
     if (engine === 'crush') return `openai/${model}`;
     return localSlugFor(engine, model);
   };
 
   const useLocalModel = async (model: string, baseUrl: string, source: string) => {
-    if (!['opencode', 'crush'].includes(localEngine)) return;
+    if (!['sekhon-local', 'opencode', 'crush'].includes(localEngine)) return;
     const normalized = baseUrl.trim().replace(/\/$/, '');
     const slug = localModelSlug(localEngine, model);
     const nextUrls = { ...baseUrls, [localEngine]: normalized };
@@ -335,7 +337,7 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
 
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
             <span style={labelStyle}>Use local models with</span>
-            {(['opencode', 'crush'] as AgentProvider[]).map((id) => (
+            {(['sekhon-local', 'opencode', 'crush'] as AgentProvider[]).map((id) => (
               <button
                 key={id}
                 onClick={() => setLocalEngine(id)}
