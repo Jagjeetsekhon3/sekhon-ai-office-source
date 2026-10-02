@@ -212,6 +212,35 @@ async function runTurn(text) {
   await hook({ hook_event_name: 'Stop' }, false);
 }
 
+async function compactConversation(focus) {
+  if (messages.length <= 3) return 'Context is already small.';
+  const transcript = messages.slice(1).map((m) => {
+    const role = m.role || 'unknown';
+    const content = typeof m.content === 'string' ? m.content : '';
+    return role + ': ' + content;
+  }).join('\\n');
+  const request = {
+    model: MODEL,
+    messages: [
+      { role: 'system', content: 'Summarize this conversation into compact working memory. Preserve decisions, constraints, file changes, unresolved tasks and exact identifiers. ' + (focus || '') },
+      { role: 'user', content: clip(transcript, 80000) }
+    ],
+    temperature: 0.1
+  };
+  const res = await fetch(BASE + '/chat/completions', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(request),
+    signal: AbortSignal.timeout(10 * 60 * 1000)
+  });
+  if (!res.ok) throw new Error('Compaction failed with HTTP ' + res.status);
+  const data = await res.json();
+  const summary = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+  if (!summary) throw new Error('Compaction returned no summary');
+  messages.splice(1, messages.length - 1, { role: 'system', content: 'Conversation memory:\\n' + String(summary) });
+  return 'Context compacted.';
+}
+
 async function main() {
   if (!MODEL) {
     process.stderr.write('Sekhon Local: no model selected. Open Settings > Agents & Models, connect a local server, then choose Use.\\r\\n');
@@ -227,6 +256,20 @@ async function main() {
   rl.on('line', async (line) => {
     const text = line.trim();
     if (!text) { rl.prompt(); return; }
+    if (text === '/clear') {
+      messages.splice(1);
+      process.stdout.write('Context cleared.\\r\\n');
+      rl.prompt();
+      return;
+    }
+    if (text === '/compact' || text.startsWith('/compact ')) {
+      busy = true;
+      try { process.stdout.write((await compactConversation(text.slice('/compact'.length).trim())) + '\\r\\n'); }
+      catch (e) { process.stderr.write('[compact error] ' + (e && e.message ? e.message : String(e)) + '\\r\\n'); }
+      busy = false;
+      rl.prompt();
+      return;
+    }
     if (busy) { process.stdout.write('Agent is still working.\\r\\n'); rl.prompt(); return; }
     busy = true;
     try { await runTurn(text); }
