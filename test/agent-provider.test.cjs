@@ -97,4 +97,15 @@ if (failures > 0) {
   console.log(`\n${failures} test(s) failed`);
   process.exit(1);
 }
+test('Sekhon Local is built-in, model-selectable, and hive inbox capable', () => {
+  assert.ok(ap.isAgentProvider('sekhon-local'));
+  assert.strictEqual(ap.inferAgentProvider('sekhon-local --model qwen3:8b'), 'sekhon-local');
+  const p = ap.providerPreset('sekhon-local');
+  assert.strictEqual(p.defaultCommand, 'sekhon-local');
+  assert.ok(p.supportsModel && p.modelFlag === '--model');
+  assert.strictEqual(p.initialPromptFlag, '--system');
+  assert.deepStrictEqual(ap.bridgeOf('sekhon-local'), { kind: 'native' });
+  assert.strictEqual(ap.canReceiveInbox('sekhon-local'), true);
+});
+
 console.log('\nAll agent-provider tests passed');
