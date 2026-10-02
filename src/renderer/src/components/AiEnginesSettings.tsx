@@ -87,6 +87,12 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
   const [ollamaBusy, setOllamaBusy] = useState(false);
   const [localEngine, setLocalEngine] = useState<AgentProvider>('opencode');
 
+  // LM Studio / vLLM / llama.cpp / LocalAI: OpenAI-compatible local servers.
+  const [compatUrl, setCompatUrl] = useState('http://localhost:1234/v1');
+  const [compatModels, setCompatModels] = useState<Array<{ id: string; ownedBy?: string }>>([]);
+  const [compatNote, setCompatNote] = useState('');
+  const [compatBusy, setCompatBusy] = useState(false);
+
   // Reseed set/not-set flags on mount (write-only — only the boolean is fetched).
   useEffect(() => {
     let alive = true;
@@ -174,17 +180,67 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
     }
   };
 
-  const useOllamaModel = async (model: string) => {
-    if (!['opencode', 'crush', 'pi'].includes(localEngine)) return;
-    const base = ollamaUrl.trim().replace(/\/$/, '').replace(/\/v1$/, '') + '/v1';
-    const slug = localSlugFor(localEngine, model);
-    const nextUrls = { ...baseUrls, [localEngine]: base };
+  const localModelSlug = (engine: AgentProvider, model: string) => {
+    if (engine === 'opencode') return `local/${model}`;
+    if (engine === 'crush') return `openai/${model}`;
+    return localSlugFor(engine, model);
+  };
+
+  const useLocalModel = async (model: string, baseUrl: string, source: string) => {
+    if (!['opencode', 'crush'].includes(localEngine)) return;
+    const normalized = baseUrl.trim().replace(/\/$/, '');
+    const slug = localModelSlug(localEngine, model);
+    const nextUrls = { ...baseUrls, [localEngine]: normalized };
     const nextModels = { ...models, [localEngine]: slug };
     setBaseUrls(nextUrls);
     setModels(nextModels);
     await window.cth.updateConfig({ providerBaseUrls: nextUrls, providerDefaultModels: nextModels });
-    setOllamaNote(`${model} is now the default for ${localEngine}.`);
+    const msg = `${model} from ${source} is now the default for ${localEngine}.`;
+    if (source === 'Ollama') setOllamaNote(msg); else setCompatNote(msg);
   };
+
+  const useOllamaModel = async (model: string) => {
+    const base = ollamaUrl.trim().replace(/\/$/, '').replace(/\/v1$/, '') + '/v1';
+    await useLocalModel(model, base, 'Ollama');
+  };
+
+  const deleteOllamaModel = async (model: string) => {
+    setOllamaBusy(true);
+    setOllamaNote(`Deleting ${model}…`);
+    try {
+      const r = await window.cth.localOllamaDelete({ baseUrl: ollamaUrl, model });
+      if (!r.ok) { setOllamaNote(r.error ?? 'Delete failed'); return; }
+      setOllamaNote(`${model} deleted.`);
+      const listed = await window.cth.localOllamaList(ollamaUrl);
+      if (listed.ok) setOllamaModels(listed.models ?? []);
+    } catch (e) {
+      setOllamaNote(e instanceof Error ? e.message : String(e));
+    } finally {
+      setOllamaBusy(false);
+    }
+  };
+
+  const refreshCompat = async (url = compatUrl) => {
+    setCompatBusy(true);
+    setCompatNote('Checking local OpenAI-compatible server…');
+    try {
+      const r = await window.cth.localOpenAiList(url);
+      if (r.ok) {
+        if (r.baseUrl) setCompatUrl(r.baseUrl);
+        setCompatModels(r.models ?? []);
+        setCompatNote(`Connected · ${r.models?.length ?? 0} model${(r.models?.length ?? 0) === 1 ? '' : 's'} available`);
+      } else {
+        setCompatModels([]);
+        setCompatNote(r.error ?? 'Could not connect');
+      }
+    } catch (e) {
+      setCompatModels([]);
+      setCompatNote(e instanceof Error ? e.message : String(e));
+    } finally {
+      setCompatBusy(false);
+    }
+  };
+
 
   const formatBytes = (n?: number) => {
     if (!n || n < 1) return '';
@@ -279,7 +335,7 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
 
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
             <span style={labelStyle}>Use local models with</span>
-            {(['opencode', 'crush', 'pi'] as AgentProvider[]).map((id) => (
+            {(['opencode', 'crush'] as AgentProvider[]).map((id) => (
               <button
                 key={id}
                 onClick={() => setLocalEngine(id)}
@@ -311,6 +367,9 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
                   <PixelButton variant="secondary" size="sm" onClick={() => void useOllamaModel(m.name)}>
                     Use
                   </PixelButton>
+                  <PixelButton variant="secondary" size="sm" onClick={() => void deleteOllamaModel(m.name)} disabled={ollamaBusy}>
+                    Delete
+                  </PixelButton>
                 </div>
               ))}
             </div>
@@ -328,6 +387,59 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
             </PixelButton>
           </div>
           {ollamaNote && <div style={{ fontSize: 11, color: 'var(--cth-ink-500)' }}>{ollamaNote}</div>}
+        </div>
+
+        <div style={{
+          padding: 10, display: 'flex', flexDirection: 'column', gap: 9,
+          background: 'var(--cth-paper-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)'
+        }}>
+          <div>
+            <div style={headStyle}>Local AI · LM Studio / vLLM / OpenAI-compatible</div>
+            <div style={{ fontSize: 12, color: 'var(--cth-ink-700)', lineHeight: '17px' }}>
+              Connect to a local server that exposes the OpenAI-compatible /v1/models API. Common defaults: LM Studio on port 1234 and vLLM on port 8000.
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <PixelButton variant="secondary" size="sm" onClick={() => { setCompatUrl('http://localhost:1234/v1'); void refreshCompat('http://localhost:1234/v1'); }} disabled={compatBusy}>
+              Detect LM Studio
+            </PixelButton>
+            <PixelButton variant="secondary" size="sm" onClick={() => { setCompatUrl('http://localhost:8000/v1'); void refreshCompat('http://localhost:8000/v1'); }} disabled={compatBusy}>
+              Detect vLLM
+            </PixelButton>
+          </div>
+
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input
+              value={compatUrl}
+              onChange={(e) => setCompatUrl(e.target.value)}
+              placeholder="http://localhost:1234/v1"
+              style={inputStyle}
+            />
+            <PixelButton variant="secondary" size="sm" onClick={() => void refreshCompat()} disabled={compatBusy}>
+              {compatBusy ? 'Checking…' : 'Connect / Refresh'}
+            </PixelButton>
+          </div>
+
+          {compatModels.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {compatModels.map((m) => (
+                <div key={m.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '5px 7px',
+                  background: 'var(--cth-cream-100)', boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)'
+                }}>
+                  <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--cth-font-mono)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {m.id}
+                  </span>
+                  {m.ownedBy && <span style={{ fontSize: 10, color: 'var(--cth-ink-500)' }}>{m.ownedBy}</span>}
+                  <PixelButton variant="secondary" size="sm" onClick={() => void useLocalModel(m.id, compatUrl, 'local server')}>
+                    Use
+                  </PixelButton>
+                </div>
+              ))}
+            </div>
+          )}
+          {compatNote && <div style={{ fontSize: 11, color: 'var(--cth-ink-500)' }}>{compatNote}</div>}
         </div>
       </div>
 
