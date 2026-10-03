@@ -883,12 +883,17 @@ export class HiveManager {
               // that already vets hook sources"). Without it the hooks silently
               // never fire. Must precede the positional prompt.
               preArgs.push('--dangerously-bypass-hook-trust');
-              // Auto mode keeps codex's OS sandbox (`-a never -s workspace-write`,
-              // agentProvider.ts). workspace-write only covers cwd, so the agent
-              // folder (inbox/.done, memory.md, outbox) and the shared hive root
-              // (research deliverables, the board for god) are added as extra
-              // writable roots. Harmless outside auto mode.
-              for (const d of this.sandboxWritableDirs(meta, dir, root, opts.extraWritableDirs)) preArgs.push('--add-dir', d);
+              // --add-dir is only valid when Codex has a writable sandbox. In
+              // manual/approval mode the effective posture may be read-only; passing
+              // writable roots there makes Codex abort at startup. Auto mode already
+              // supplies "-a never -s workspace-write" (agentProvider.ts), so add the
+              // hive roots only in that mode. Manual mode starts cleanly and Codex
+              // can ask the user before any write instead of exiting with code 1.
+              if (opts.autoMode) {
+                for (const d of this.sandboxWritableDirs(meta, dir, root, opts.extraWritableDirs)) {
+                  preArgs.push('--add-dir', d);
+                }
+              }
             }
             else if (desc.shim === 'pi') {
               // Pi (earendil-works) has a rich pi.on(event) lifecycle. We drop a
