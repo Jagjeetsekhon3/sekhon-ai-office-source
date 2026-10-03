@@ -10,7 +10,6 @@ export const SEKHON_LOCAL_AGENT_SCRIPT = String.raw`'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
 const net = require('node:net');
-const readline = require('node:readline');
 const cp = require('node:child_process');
 const crypto = require('node:crypto');
 
@@ -251,49 +250,69 @@ async function main() {
   process.stdout.write('Model: ' + MODEL + '\r\nServer: ' + BASE + '\r\n');
   process.stdout.write('Tools: ' + (AUTO ? 'read/write/shell (Auto mode)' : 'read-only') + '\r\n\r\n');
   await hook({ hook_event_name: 'SessionStart' }, false);
-  // Keep the built-in local agent alive explicitly. On Windows/node-pty,
-  // readline alone can lose its active handle after startup and Electron's
-  // Node runtime then exits cleanly before the office can deliver queued input.
+  // Keep the built-in local agent alive explicitly. Use raw stdin instead of
+  // readline: Electron-as-Node under Windows ConPTY can emit readline's "close"
+  // immediately after startup even though the PTY itself is still valid. That
+  // made Sekhon Local print its banner/prompt and then exit with code 0.
   process.stdin.resume();
   const keepAlive = setInterval(() => {}, 60_000);
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true, prompt: '> ' });
-  const shutdown = () => {
-    clearInterval(keepAlive);
-    try { rl.close(); } catch (_) {}
-  };
-  process.once('SIGINT', shutdown);
-  process.once('SIGTERM', shutdown);
-  rl.once('close', () => {
-    // PTY/input closed by the office: release the explicit keepalive so the
-    // process can terminate normally.
-    clearInterval(keepAlive);
-  });
-  let busy = false;
-  rl.prompt();
-  rl.on('line', async (line) => {
+  let inputBuffer = '';
+  let turnChain = Promise.resolve();
+
+  const prompt = () => process.stdout.write('> ');
+  const handleLine = async (line) => {
     const text = line.trim();
-    if (!text) { rl.prompt(); return; }
+    if (!text) { prompt(); return; }
     if (text === '/clear') {
       messages.splice(1);
       process.stdout.write('Context cleared.\r\n');
-      rl.prompt();
+      prompt();
       return;
     }
     if (text === '/compact' || text.startsWith('/compact ')) {
-      busy = true;
-      try { process.stdout.write((await compactConversation(text.slice('/compact'.length).trim())) + '\r\n'); }
-      catch (e) { process.stderr.write('[compact error] ' + (e && e.message ? e.message : String(e)) + '\r\n'); }
-      busy = false;
-      rl.prompt();
+      try {
+        process.stdout.write((await compactConversation(text.slice('/compact'.length).trim())) + '\r\n');
+      } catch (e) {
+        process.stderr.write('[compact error] ' + (e && e.message ? e.message : String(e)) + '\r\n');
+      }
+      prompt();
       return;
     }
-    if (busy) { process.stdout.write('Agent is still working.\r\n'); rl.prompt(); return; }
-    busy = true;
-    try { await runTurn(text); }
-    catch (e) { process.stderr.write('\r\n[local agent error] ' + (e && e.message ? e.message : String(e)) + '\r\n'); }
-    busy = false;
-    rl.prompt();
+    try {
+      await runTurn(text);
+    } catch (e) {
+      process.stderr.write('\r\n[local agent error] ' + (e && e.message ? e.message : String(e)) + '\r\n');
+    }
+    prompt();
+  };
+
+  process.stdin.setEncoding('utf8');
+  process.stdin.on('data', (chunk) => {
+    inputBuffer += chunk;
+    // node-pty submits with CR; tolerate LF/CRLF too. Queue turns serially so a
+    // second office message cannot overlap an in-flight model response.
+    const parts = inputBuffer.split(/\r\n|\r|\n/);
+    inputBuffer = parts.pop() || '';
+    for (const line of parts) {
+      turnChain = turnChain.then(() => handleLine(line)).catch((e) => {
+        process.stderr.write('\r\n[local agent error] ' + (e && e.message ? e.message : String(e)) + '\r\n');
+        prompt();
+      });
+    }
   });
+  process.stdin.on('error', (e) => {
+    process.stderr.write('\r\n[input error] ' + (e && e.message ? e.message : String(e)) + '\r\n');
+  });
+  // Do not terminate on stdin's "end" event. Windows ConPTY/Electron can report
+  // a transient EOF during renderer/session restoration. The PTY lifetime is
+  // owned by the office; SIGTERM/SIGINT are the explicit shutdown path.
+  const shutdown = () => {
+    clearInterval(keepAlive);
+    process.exit(0);
+  };
+  process.once('SIGINT', shutdown);
+  process.once('SIGTERM', shutdown);
+  prompt();
 }
 main().catch((e) => {
   process.stderr.write('Sekhon Local failed: ' + (e && e.message ? e.message : String(e)) + '\r\n');
