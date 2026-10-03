@@ -1395,5 +1395,9 @@
     "viewSource": "查看源码",
     "loading": "正在加载图片…",
     "decodeFailed": "无法解码此图片——文件可能已损坏或扩展名有误"
+  },
+  "businessWorkspace": {
+    "title": "业务工作区",
+    "hint": "在下方选择角色以填写名称和任务说明。"
   }
 }

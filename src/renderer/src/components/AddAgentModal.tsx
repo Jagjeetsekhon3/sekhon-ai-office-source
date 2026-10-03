@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PixelPanel } from './PixelPanel';
 import { PixelButton } from './PixelButton';
@@ -28,6 +28,8 @@ import {
   providerPreset,
   isClaudeProvider
 } from '@/store/config';
+import { templatesForWorkspace, selectedTemplate, draftAfterWorkspaceChange } from '@shared/agentTemplates';
+import { BusinessWorkspacePicker } from './BusinessWorkspacePicker';
 import { useRtl } from '@/i18n/useDirection';
 
 const ACCENTS: AccentColorName[] = ['coral', 'mint', 'sky', 'lemon', 'lilac', 'peach'];
@@ -44,104 +46,6 @@ const ossGroupHead: CSSProperties = {
   fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
   color: 'var(--cth-ink-500)', textTransform: 'uppercase', marginBottom: 4
 };
-
-// One-click briefing templates — fill Description + Goal with a sharp, ready-to-run
-// role so a user isn't staring at a blank field (item 7). The template BRIEFINGS
-// stay English (they become agent prompts — see the i18n report); only the
-// picker labels are translated.
-const DESCRIPTION_TEMPLATES: { workspace: 'studio' | 'agency'; label: string; name: string; description: string; goal: string }[] = [
-  {
-    workspace: 'studio',
-    label: '3D · Business Manager',
-    name: 'Studio Manager',
-    description: 'orchestrates Sekhon Studio business operations',
-    goal: 'Coordinate Sekhon Studio work across products, website, marketing, orders and business analysis. Break requests into clear tasks, delegate to the right specialist, track dependencies and bring decisions involving money, customers, destructive changes or publishing back to the owner for approval.'
-  },
-  {
-    workspace: 'studio',
-    label: '3D · Website',
-    name: 'Website Developer',
-    description: 'builds and maintains the Sekhon Studio e-commerce systems',
-    goal: 'Work on the Sekhon Studio website and business systems with careful GitHub, Vercel and Supabase workflows. Implement product, inventory, category, variation, customization, checkout and admin features. Inspect existing code before changing it, test changes, and never expose credentials.'
-  },
-  {
-    workspace: 'studio',
-    label: '3D · Product',
-    name: 'Product Manager',
-    description: 'manages 3D-print products, catalog and inventory',
-    goal: 'Turn 3D-print product ideas into organized sellable catalog entries. Maintain product requirements, dimensions, variants, colors, customization inputs, pricing notes, inventory needs and launch checklists. Coordinate website and marketing tasks with the other agents.'
-  },
-  {
-    workspace: 'studio',
-    label: '3D · Modeling',
-    name: '3D Product Assistant',
-    description: 'supports printable-model and parametric-product development',
-    goal: 'Help develop practical 3D-printable products using Blender, OpenSCAD and parametric workflows. Think about dimensions, tolerances, print orientation, support reduction, assembly and repeatable customization. Do not claim a model is printable until checks or tests support it.'
-  },
-  {
-    workspace: 'studio',
-    label: '3D · Marketing',
-    name: 'Studio Marketing',
-    description: 'creates product marketing for Sekhon Studio',
-    goal: 'Prepare product titles, descriptions, SEO, offer ideas, social posts, reel concepts and creative briefs for Sekhon Studio. Keep claims grounded in actual product details and hand publishing or paid-spend decisions to the owner.'
-  },
-  {
-    workspace: 'studio',
-    label: '3D · Analyst',
-    name: 'Business Analyst',
-    description: 'turns Sekhon Studio business data into useful actions',
-    goal: 'Analyze available sales, customer, invoice, product and inventory information. Surface useful trends, missing data and operational follow-ups. Never invent numbers; clearly distinguish observed data from suggestions.'
-  },
-  {
-    workspace: 'agency',
-    label: 'Agency · Creative Director',
-    name: 'Creative Director',
-    description: 'orchestrates the freelance advertising agency',
-    goal: 'Run the owner\'s one-person advertising agency as an AI creative team. Turn briefs into tasks, coordinate strategy, copy, art direction, AI image/video and production, maintain creative consistency, and present important creative or commercial decisions to the owner.'
-  },
-  {
-    workspace: 'agency',
-    label: 'Agency · Business Lead',
-    name: 'Business Lead',
-    description: 'finds and develops relevant freelance opportunities',
-    goal: 'Find relevant freelance opportunities in motion graphics, AI advertising, AI video, 3D, creative direction, product films and social creative. Capture source, client, requirements, budget when stated, deadline and fit evidence. Research promising leads and prepare them for proposal work. Never contact a client, submit a proposal, agree to pricing, spend money or represent the owner without explicit approval.'
-  },
-  {
-    workspace: 'agency',
-    label: 'Agency · Strategy',
-    name: 'Strategist',
-    description: 'develops advertising strategy and campaign routes',
-    goal: 'Study each client brief, audience, category and competitive context. Develop clear campaign territories, communication strategy, message hierarchy and rationale. Mark assumptions and research gaps instead of presenting guesses as facts.'
-  },
-  {
-    workspace: 'agency',
-    label: 'Agency · Copy',
-    name: 'Copywriter',
-    description: 'writes campaign concepts, scripts and persuasive copy',
-    goal: 'Turn approved strategy into strong campaign lines, scripts, social copy, presentation copy and proposal language. Match the requested brand voice, preserve factual accuracy and provide options when the creative direction is still open.'
-  },
-  {
-    workspace: 'agency',
-    label: 'Agency · Art',
-    name: 'Art Director',
-    description: 'develops visual directions and storyboards',
-    goal: 'Translate briefs and scripts into visual systems, key-visual directions, storyboard plans, references and production-ready image prompts. Protect continuity across frames and clearly specify composition, lighting, styling and brand constraints.'
-  },
-  {
-    workspace: 'agency',
-    label: 'Agency · AI Motion',
-    name: 'AI Motion',
-    description: 'plans AI video, motion graphics and production workflows',
-    goal: 'Prepare shot breakdowns, image-to-video prompts, motion directions, continuity notes and practical production plans for AI video and motion-graphics work. Preserve approved faces, products, camera logic and brand details across shots.'
-  },
-  {
-    workspace: 'agency',
-    label: 'Agency · Production',
-    name: 'Production',
-    description: 'organizes agency deliverables, feedback and handoff',
-    goal: 'Track deliverables, versions, dependencies, feedback, approvals and deadlines. Keep a clear production checklist and flag blockers early. Never mark client approval or delivery complete without evidence.'
-  }
-];
 
 // Copy-paste prompt the user hands to any AI to generate a hire manifest. It pins
 // the exact JSON shape the importer accepts and ends with a fill-in section so the
@@ -201,16 +105,17 @@ function uniqueId(name: string): string {
 export interface AddAgentModalProps {
   onClose: () => void;
   config: HarnessConfig;
-  businessWorkspace?: 'studio' | 'agency';
   /** Lift config changes (e.g. a project registered from this modal) back up to
    *  App so the rest of the UI — and the next time this modal opens — sees them. */
   onConfigChange?: (config: HarnessConfig) => void;
 }
 
-export function AddAgentModal({ onClose, config, businessWorkspace = 'studio', onConfigChange }: AddAgentModalProps) {
+export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModalProps) {
   const { t: tr } = useTranslation();
   const rtl = useRtl();
   const addAgent = useStore(s => s.addAgent);
+  const businessWorkspace = useStore(s => s.businessWorkspace);
+  const templates = templatesForWorkspace(businessWorkspace);
   // Deep links and file batches share one FIFO. The head alone seeds the form;
   // every item still requires an explicit spawn or skip.
   const hireQueue = useStore(s => s.hireQueue);
@@ -310,7 +215,20 @@ export function AddAgentModal({ onClose, config, businessWorkspace = 'studio', o
   const [error, setError] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
   // Which config section the left sidebar index is showing.
-  const [section, setSection] = useState<SectionKey>('identity');
+  const [section, setSection] = useState<SectionKey>(pendingHire ? 'identity' : 'briefing');
+  const activeTemplate = selectedTemplate(businessWorkspace, { name, description, goal });
+  const previousWorkspace = useRef(businessWorkspace);
+  useLayoutEffect(() => {
+    const previous = previousWorkspace.current;
+    previousWorkspace.current = businessWorkspace;
+    const draft = { name, description, goal };
+    const next = draftAfterWorkspaceChange(previous, businessWorkspace, draft, !!hireMeta);
+    if (next !== draft) {
+      setName(next.name);
+      setDescription(next.description);
+      setGoal(next.goal);
+    }
+  }, [businessWorkspace, name, description, goal, hireMeta]);
   // "Generate a hire with AI" helper — reveals a copy-paste prompt (item 7).
   const [showHirePrompt, setShowHirePrompt] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
@@ -595,6 +513,7 @@ export function AddAgentModal({ onClose, config, businessWorkspace = 'studio', o
               around the section pane. maxHeight keeps the dialog within the
               viewport (title bar stays pinned). */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16, maxHeight: '86vh', overflowY: 'auto' }}>
+            <BusinessWorkspacePicker />
             {hireMeta && (
               <div style={{
                 padding: '6px 10px',
@@ -1085,17 +1004,18 @@ export function AddAgentModal({ onClose, config, businessWorkspace = 'studio', o
 
                 {section === 'briefing' && (
                   <>
-                    <Row label={tr('addAgent.templates')}>
+                    <Row label={tr('addAgent.templates')} group>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        {DESCRIPTION_TEMPLATES.filter((t) => t.workspace === businessWorkspace).map((t) => (
+                        {templates.map((t) => (
                           <button
-                            key={t.label}
-                            onClick={() => { setName(t.name); setDescription(t.description); setGoal(t.goal); }}
+                            key={t.id}
+                            aria-pressed={activeTemplate?.id === t.id}
+                            onClick={() => { setName(t.name); setDescription(t.description); setGoal(t.goal); setCharacter(characterForName(t.name) ?? DEFAULT_CHARACTER); }}
                             title={t.goal}
                             style={{
                               padding: '3px 8px 1px',
-                              background: 'var(--cth-cream-100)',
-                              boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                              background: activeTemplate?.id === t.id ? 'var(--cth-mint-light)' : 'var(--cth-cream-100)',
+                              boxShadow: activeTemplate?.id === t.id ? 'inset 0 0 0 1.5px var(--cth-mint)' : 'inset 0 0 0 1px var(--cth-ink-100)',
                               fontFamily: 'var(--cth-font-ui)', fontSize: 12,
                               color: 'var(--cth-ink-900)', cursor: 'pointer', border: 'none'
                             }}
@@ -1230,9 +1150,10 @@ const inputStyle: React.CSSProperties = {
   outline: 'none'
 };
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({ label, children, group = false }: { label: string; children: React.ReactNode; group?: boolean }) {
+  const Container = group ? 'div' : 'label';
   return (
-    <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <Container role={group ? 'group' : undefined} aria-label={group ? label : undefined} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <span style={{
         fontFamily: 'var(--cth-font-display)',
         fontSize: 8, lineHeight: '12px',
@@ -1240,6 +1161,6 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
         textTransform: 'uppercase'
       }}>{label}</span>
       {children}
-    </label>
+    </Container>
   );
 }

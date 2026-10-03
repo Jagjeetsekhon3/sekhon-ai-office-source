@@ -37,14 +37,8 @@ import { useHoldOptionToTalk } from '@/freeflow/holdOption';
 declare const __APP_VERSION__: string;
 
 export function App() {
-  const [businessWorkspace, setBusinessWorkspace] = useState<'studio' | 'agency'>(() => {
-    try { return window.localStorage.getItem('sekhon.businessWorkspace') === 'agency' ? 'agency' : 'studio'; }
-    catch { return 'studio'; }
-  });
-  const chooseBusinessWorkspace = (next: 'studio' | 'agency') => {
-    setBusinessWorkspace(next);
-    try { window.localStorage.setItem('sekhon.businessWorkspace', next); } catch { /* noop */ }
-  };
+  const businessWorkspace = useStore(s => s.businessWorkspace);
+  const chooseBusinessWorkspace = useStore(s => s.setBusinessWorkspace);
 
   // Point every {{godName}} string at the orchestrator's real, renameable name.
   useGodNameSync();
@@ -541,7 +535,6 @@ export function App() {
         <AddAgentModal
           onClose={closeAddAgentReview}
           config={config}
-          businessWorkspace={businessWorkspace}
           onConfigChange={setConfig}
         />
       )}

@@ -1395,5 +1395,9 @@
     "viewSource": "view source",
     "loading": "loading image…",
     "decodeFailed": "could not decode this image — the file may be corrupt or misnamed"
+  },
+  "businessWorkspace": {
+    "title": "Business workspace",
+    "hint": "Choose a role below to fill the name and briefing."
   }
 }

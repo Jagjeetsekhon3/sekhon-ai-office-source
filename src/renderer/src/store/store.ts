@@ -1,3 +1,4 @@
+import { BUSINESS_WORKSPACE_KEY, resolveBusinessWorkspace, type BusinessWorkspace } from '@shared/businessWorkspace';
 import { migrateSekhonAgent } from '@shared/sekhonIdentity';
 import { create } from 'zustand';
 import type { AccentColorName } from '@/design/tokens';
@@ -169,6 +170,8 @@ export type SidebarTab = 'terminal' | 'messages' | 'traces' | 'git';
 export type GodStatus = 'booting' | 'ready' | 'failed';
 
 interface State {
+  businessWorkspace: BusinessWorkspace;
+  setBusinessWorkspace: (workspace: BusinessWorkspace) => void;
   agents: Agent[];
   /** Agents whose terminal was closed — retained + flagged, kept off the active
    *  roster/floor. The hive registry retains them durably; this mirrors them for
@@ -674,6 +677,14 @@ function newQueuedId(): string {
 }
 
 export const useStore = create<State>((set, get) => ({
+  businessWorkspace: (() => {
+    try { return resolveBusinessWorkspace(window.localStorage.getItem(BUSINESS_WORKSPACE_KEY)); }
+    catch { return 'studio'; }
+  })(),
+  setBusinessWorkspace: (workspace) => {
+    try { window.localStorage.setItem(BUSINESS_WORKSPACE_KEY, workspace); } catch { /* selection still works */ }
+    set({ businessWorkspace: workspace });
+  },
   agents: initialAgents,
   archivedAgents: initialArchivedAgents,
   restorableAgents: initialRestorableAgents,
