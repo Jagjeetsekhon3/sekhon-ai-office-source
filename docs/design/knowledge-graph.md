@@ -1,10 +1,10 @@
 # Knowledge Graph — Enterprise Multimodal Context for Agents (Design, v1)
 
 **Feature:** Knowledge Graph (enterprise context store + agent access)
-**Branch:** `feat/knowledge-graph` · **Author:** Stanley · **Status:** design + v1 vertical slice in this pass
+**Branch:** `feat/knowledge-graph` · **Author:** Sales Lead · **Status:** design + v1 vertical slice in this pass
 **Flag:** `knowledgeGraph.enabled` (default **OFF** — zero behaviour change when off)
 
-> **Naming note.** This is *not* `MEMORY_GRAPH_SPEC.md` (Jim's hive **message-graph visualization** — a renderer panel that draws who-talks-to-whom). This feature is the **enterprise knowledge store**: the user/enterprise adds multimodal artifacts (docs, PDFs, images, sheets, code, markdown…) that represent their context and business logic, and agents on the floor get a **CLI tool** to query that knowledge on demand. The two share no code. Config key here is `knowledgeGraph`; the manager class is `KnowledgeManager` and the agent CLI is `kg`.
+> **Naming note.** This is *not* `MEMORY_GRAPH_SPEC.md` (Business Lead's hive **message-graph visualization** — a renderer panel that draws who-talks-to-whom). This feature is the **enterprise knowledge store**: the user/enterprise adds multimodal artifacts (docs, PDFs, images, sheets, code, markdown…) that represent their context and business logic, and agents on the floor get a **CLI tool** to query that knowledge on demand. The two share no code. Config key here is `knowledgeGraph`; the manager class is `KnowledgeManager` and the agent CLI is `kg`.
 
 ---
 
@@ -190,7 +190,7 @@ Mirrors the MemPalace / Slack wiring 1:1 so it composes with existing code and o
 1. **More modalities:** PDF (poppler hook → bundled parser), xlsx/docx/pptx, image **OCR/vision** enrichment over the already-stored originals.
 2. **FTS5 index:** swap the keyword scorer for SQLite FTS5/BM25 (free with `better-sqlite3`), fronted by a loopback query endpoint so the out-of-process CLI keeps its native-free contract. Agent interface unchanged.
 3. **Embeddings / semantic search:** reuse MemPalace's local embedder to add a vector index; `kg search` blends keyword + semantic. Agent interface unchanged.
-4. **True graph layer:** promote `tags`/`source`/`modality` + extracted entities into typed relations; optionally a renderer view (distinct from Jim's message graph).
+4. **True graph layer:** promote `tags`/`source`/`modality` + extracted entities into typed relations; optionally a renderer view (distinct from Business Lead's message graph).
 5. **MCP surface:** wrap the same store in an MCP server for typed tool-call access when an agent benefits from schema'd queries — behind the same data + the same flag.
 6. **Renderer management panel:** drag-drop ingestion, per-doc preview, re-index, delete — beyond the minimal Settings toggle shipped in v1.
 7. **Packaging verification:** confirm `KG_CLI` resolves under `process.resourcesPath` in a packaged build (v1 is validated in dev/worktree via tests + direct CLI runs, matching the dispatch bar of typecheck + tests green).

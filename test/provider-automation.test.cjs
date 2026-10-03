@@ -17,7 +17,7 @@ const {
 // — the queue's one-pending-compact invariant depends entirely on this predicate —
 
 test('isCompactionCommand matches every provider that has a compact verb', () => {
-  for (const p of ['claude', 'codex', 'grok', 'kimi', 'qwen', 'opencode', 'pi', 'copilot', 'cursor']) {
+  for (const p of ['claude', 'codex', 'grok', 'kimi', 'qwen', 'opencode', 'pi', 'copilot', 'cursor', 'sekhon-local']) {
     const cmd = compactionCommandForProvider(p, '');
     if (!cmd) continue; // provider has no typeable compaction — nothing to dedupe
     assert.equal(isCompactionCommand(cmd), true, `${p}: ${cmd}`);
@@ -56,6 +56,7 @@ test('each provider receives only its supported compaction syntax', () => {
   assert.equal(compactionCommandForProvider('qwen', ''), '/compress');
   assert.equal(compactionCommandForProvider('opencode', ''), '/compact');
   assert.equal(compactionCommandForProvider('pi', ''), '/compact');
+  assert.equal(compactionCommandForProvider('sekhon-local', ''), '/compact');
 
   // No command we can trust → no keystrokes at all.
   for (const p of ['antigravity', 'crush', 'copilot', 'cursor', 'custom']) {
@@ -70,6 +71,7 @@ test('the focus rides along only where the TUI parses it', () => {
   assert.equal(compactionCommandForProvider('kimi', focus), `/compact ${focus}`);
   assert.equal(compactionCommandForProvider('pi', focus), `/compact ${focus}`);
   assert.equal(compactionCommandForProvider('qwen', focus), `/compress ${focus}`);
+  assert.equal(compactionCommandForProvider('sekhon-local', focus), `/compact ${focus}`);
 
   // codex/opencode ignore trailing text, so it must be dropped, not typed.
   assert.equal(compactionCommandForProvider('codex', focus), '/compact');
@@ -95,6 +97,7 @@ test('clearing uses each CLI own verb, not a hardcoded /clear', () => {
   assert.equal(clearCommandForProvider('grok'), '/new');
   assert.equal(clearCommandForProvider('opencode'), '/new');
   assert.equal(clearCommandForProvider('pi'), '/new');
+  assert.equal(clearCommandForProvider('sekhon-local'), '/clear');
   // Palette-only TUI, print-mode CLI, Cursor (unverified slash surface), unknown binary.
   for (const p of ['crush', 'copilot', 'cursor', 'custom']) {
     assert.equal(clearCommandForProvider(p), null, p);

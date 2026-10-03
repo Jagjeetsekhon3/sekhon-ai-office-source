@@ -2,10 +2,10 @@
 
 Declarative templates so **adding a tool = pick a template + paste a secret** — no
 per-tool client code. Each template is pure data conforming to the **canonical
-`IntegrationTemplate`** in `src/shared/integrations.ts` (Jim's registry/broker spec —
+`IntegrationTemplate`** in `src/shared/integrations.ts` (Business Lead's registry/broker spec —
 `hive/docs/integrations-spec.md`). The first-wave entries are appended directly into
 that file's single `INTEGRATION_TEMPLATES` array — one type, one enum, one registry,
-no separate catalog. The **loopback broker** (Jim) makes the actual HTTP calls and is
+no separate catalog. The **loopback broker** (Business Lead) makes the actual HTTP calls and is
 the only place a secret is ever materialized. This doc is the research backing each
 template: base URL, auth model, and the high-value endpoints.
 
@@ -48,7 +48,7 @@ pastes `Basic <base64("email:api_token")>` and the broker injects it verbatim un
 does the base64) would be cleaner — flagged to god as a proposed enum addition.
 
 **OAuth tools (Gmail / Google Calendar / Salesforce)** are **not registered in v1**:
-Jim's `IntegrationAuthType` has no `oauth2`, and OAuth refresh is a v1 non-goal (spec
+Business Lead's `IntegrationAuthType` has no `oauth2`, and OAuth refresh is a v1 non-goal (spec
 §8). Their research is retained under **Pending: OAuth broker** below; they get added
 verbatim once a broker-OAuth auth type exists.
 
@@ -115,7 +115,7 @@ verbatim once a broker-OAuth auth type exists.
 
 These three are **researched but NOT registered** in `YC_INTEGRATION_TEMPLATES`. They
 authenticate via OAuth 2.0 (a brokered access/refresh token, not a pasted static
-secret), which Jim's v1 schema does not model: `IntegrationAuthType` has no `oauth2`
+secret), which Business Lead's v1 schema does not model: `IntegrationAuthType` has no `oauth2`
 and OAuth refresh is a v1 non-goal (spec §8). To ship them, the registry needs a
 broker-OAuth auth type (e.g. `oauth2` with a `provider` + `scopes`, the token held and
 refreshed by the broker, injected as `Authorization: Bearer <token>` at forward-time).
@@ -150,13 +150,13 @@ needs a per-org instance host (`<instance>.my.salesforce.com`) the user supplies
 
 ## Notes / open items
 
-- **Conformed to Jim's canonical schema.** The 7 first-wave entries are appended
+- **Conformed to Business Lead's canonical schema.** The 7 first-wave entries are appended
   directly into `INTEGRATION_TEMPLATES` in `src/shared/integrations.ts`, using the
   canonical `IntegrationTemplate` type + `authType` enum. The standalone
   `src/shared/integrationTemplates.ts` (and its interface) was removed — **one type,
   one enum, one registry, no competing catalog**. Verified `typecheck:node` +
   `typecheck:web` exit 0.
-- **Flagged gaps (god → Jim, enum widening rather than forking the type):**
+- **Flagged gaps (god → Business Lead, enum widening rather than forking the type):**
   1. **OAuth (Gmail/Calendar/Salesforce):** no `oauth2` authType; v1 non-goal. The 3
      are documented (above) but unregistered. → add a broker-OAuth auth type, or defer.
   2. **Basic auth (Jira/Confluence):** works today as `header` + a pre-encoded
@@ -166,11 +166,11 @@ needs a per-org instance host (`<instance>.my.salesforce.com`) the user supplies
      template has no static-header field. v1 workaround: the worker sends it per
      request. A `staticHeaders` field (or a `notion` kind) would carry it natively.
 - **Three `IntegrationTemplate` shapes still exist** across the tree (this file →
-  conformed; Jim's `integrations.ts`; Ryan's renderer `registryClient.ts` mock). Full
-  collapse to one needs Ryan's Settings UI to consume the shared templates — a
+  conformed; Business Lead's `integrations.ts`; Research Assistant's renderer `registryClient.ts` mock). Full
+  collapse to one needs Research Assistant's Settings UI to consume the shared templates — a
   cross-agent step for god to sequence.
 - **Verify-on-wire before GA:** Jira enhanced JQL is migrating to
   `/rest/api/3/search/jql`; Notion `Notion-Version` advances periodically; pinned API
   versions (`v60.0`, `2022-06-28`, `v2`) re-check at integration time.
-- **Out of scope (other agents):** the registry/broker runtime (Jim) and the Settings
-  UI (Ryan). This deliverable is the conformed template data + this doc only.
+- **Out of scope (other agents):** the registry/broker runtime (Business Lead) and the Settings
+  UI (Research Assistant). This deliverable is the conformed template data + this doc only.

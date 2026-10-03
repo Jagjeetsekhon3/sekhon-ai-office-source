@@ -13,18 +13,18 @@ import {
   type TestResult
 } from '@/integrations/registryClient';
 
-// Integrations configuration UI — Settings → Integrations. Conformed to Jim's
-// spec v1 (hive/docs/integrations-spec.md) and styled to Pam's mockup
+// Integrations configuration UI — Settings → Integrations. Conformed to Business Lead's
+// spec v1 (hive/docs/integrations-spec.md) and styled to Creative Director's mockup
 // (hive/docs/integrations-ui-mockup.html). Three views: the configured list, a
 // pick-a-template gallery, and a configure-&-test step.
 //
 // All data flows through integrationsClient — never IPC directly.
 //
-// v1 worker model (Jim §4): the broker grants EVERY enabled integration to ALL
+// v1 worker model (Business Lead §4): the broker grants EVERY enabled integration to ALL
 // workers; there is no per-integration worker scoping yet. So "which workers can
 // use it" is surfaced as the usability gate — usable === enabled && hasSecret —
 // rather than an editable per-integration picker. Per-worker scoping is a future
-// extension; this reflection updates when Jim confirms that model.
+// extension; this reflection updates when Business Lead confirms that model.
 
 type View = 'list' | 'gallery' | 'configure';
 
@@ -51,7 +51,7 @@ const AUTH_LABEL: Record<IntegrationAuthType, string> = {
 // Auth types a user may pick for a custom-REST integration.
 const CUSTOM_AUTH: IntegrationAuthType[] = ['none', 'bearer', 'header'];
 
-// UI-only brand glyphs (Jim's templates carry no glyph). Falls back to label initials.
+// UI-only brand glyphs (Business Lead's templates carry no glyph). Falls back to label initials.
 const GLYPH: Record<string, { mono: string; bg: string }> = {
   github: { mono: 'Gh', bg: '#1A1320' },
   'custom-rest': { mono: '{}', bg: '#2E9E5B' }
@@ -74,7 +74,7 @@ function Glyph({ mono, bg, lg }: { mono: string; bg: string; lg?: boolean }) {
   );
 }
 
-/** Is an integration actually usable by workers? (Jim §6 gate.) */
+/** Is an integration actually usable by workers? (Business Lead §6 gate.) */
 function usable(r: { enabled: boolean; authType: IntegrationAuthType; hasSecret: boolean }): boolean {
   return r.enabled && (!needsSecret(r.authType) || r.hasSecret);
 }

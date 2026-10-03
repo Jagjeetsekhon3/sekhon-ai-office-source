@@ -1,3 +1,4 @@
+import { sekhonAgentName } from './sekhonIdentity';
 /**
  * Shareable "hires" — portable agent role templates (manifest spec v1).
  *
@@ -24,7 +25,8 @@
 import { mcpCatalogEntry } from './mcpCatalog';
 import { MAX_AGENT_TOKEN_CAP } from './tokenCaps';
 
-export const HIRE_SPEC_V1 = 'munder-difflin/hire@1';
+export const HIRE_SPEC_V1 = 'sekhon-ai-office/hire@1';
+const LEGACY_HIRE_SPEC_V1 = 'munder-difflin/hire@1';
 
 /** Skill ids bundled in app resources (the only values a hire manifest may request
  *  in the `skills` field). A manifest can never name an arbitrary skill path —
@@ -38,7 +40,7 @@ export const BUNDLED_SKILL_IDS: ReadonlySet<string> = new Set([
 /** Providers a manifest may request ('agy' is accepted as an alias for
  *  'antigravity'). 'custom' is deliberately NOT allowed — it would let a
  *  manifest choose an arbitrary local binary. */
-export type HireProvider = 'claude' | 'antigravity' | 'codex' | 'cursor';
+export type HireProvider = 'claude' | 'antigravity' | 'codex' | 'cursor' | 'sekhon-local';
 
 export interface HireManifest {
   /** Spec tag; exactly `munder-difflin/hire@1` for this version. */
@@ -91,7 +93,7 @@ export interface HireValidation {
   consentRequired?: string[];
 }
 
-const PROVIDERS: readonly string[] = ['claude', 'antigravity', 'codex', 'cursor'];
+const PROVIDERS: readonly string[] = ['claude', 'antigravity', 'codex', 'cursor', 'sekhon-local'];
 const MAX_BYTES = 64 * 1024;
 
 /** A flag ("-x", "--flag", "--flag=value") or a bare value token that may follow
@@ -174,11 +176,12 @@ export function validateHireManifest(raw: unknown): HireValidation {
   }
   const o = raw as Record<string, unknown>;
 
-  if (o.spec !== HIRE_SPEC_V1) {
+  if (o.spec !== HIRE_SPEC_V1 && o.spec !== LEGACY_HIRE_SPEC_V1) {
     return { ok: false, errors: [`unsupported spec "${String(o.spec)}" (expected "${HIRE_SPEC_V1}")`] };
   }
 
-  const name = capped(o.name, 40, 'name', errors, true);
+  const rawName = capped(o.name, 40, 'name', errors, true);
+  const name = rawName ? sekhonAgentName(rawName) : rawName;
   const description = capped(o.description, 200, 'description', errors);
   const goal = capped(o.goal, 4000, 'goal', errors);
   const character = capped(o.character, 24, 'character', errors)?.toLowerCase();
@@ -322,7 +325,7 @@ export function validateHireManifest(raw: unknown): HireValidation {
 export function parseHireDeepLink(link: string): string | null {
   let u: URL;
   try { u = new URL(link); } catch { return null; }
-  if (u.protocol !== 'munderdifflin:') return null;
+  if (u.protocol !== 'sekhonaioffice:' && u.protocol !== 'munderdifflin:') return null;
   // Both munderdifflin://hire?src= (host) and munderdifflin:hire?src= (path).
   const action = (u.host || u.pathname.replace(/^\/+/, '')).toLowerCase();
   if (action !== 'hire') return null;

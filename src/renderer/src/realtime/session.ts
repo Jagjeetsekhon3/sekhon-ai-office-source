@@ -1,5 +1,5 @@
 /**
- * Realtime Michael — renderer voice session (card rt-2, Phase 1 = READ-ONLY voice).
+ * Realtime Sekhon Manager — renderer voice session (card rt-2, Phase 1 = READ-ONLY voice).
  *
  * The voice orchestrator runs IN THE RENDERER over WebRTC, talking speech-to-speech
  * to OpenAI `gpt-realtime-2`. The renderer never holds the real OpenAI key: it asks
@@ -8,13 +8,13 @@
  *
  * We drive a CUSTOM `OpenAIRealtimeWebRTC` transport (not the bare `'webrtc'` string)
  * so we can: (a) open the mic ourselves with echo-cancellation + noise-suppression +
- * auto-gain (and honor the device the user picked — Oscar's rt-8 seam), and (b) own
+ * auto-gain (and honor the device the user picked — Business Analyst's rt-8 seam), and (b) own
  * the <audio> sink for playback. Turn-taking uses semantic VAD with barge-in (the
  * model truncates when the user talks over it).
  *
- * Phase 1 is a read-only connect→listen→respond round-trip. The agent runs Kevin's
+ * Phase 1 is a read-only connect→listen→respond round-trip. The agent runs Accountant's
  * rt-4 READ-ONLY tools (get_fleet_status / get_tasks / get_cost / get_triggers /
- * get_config / get_memory / get_activity) and god's rt-6 "Michael" persona, so the
+ * get_config / get_memory / get_activity) and god's rt-6 "Sekhon Manager" persona, so the
  * agent_tool_start/agent_tool_end lifecycle fires and the mic goes idle during a tool
  * call and resumes — a Phase-1 acceptance criterion. NO hive action-tools yet (rt-5, held).
  *
@@ -49,16 +49,16 @@ export interface RealtimeMichaelState {
   model: string | null;
   /** Unix-seconds expiry of the ephemeral token, if main reported one. */
   expiresAt: number | null;
-  /** Selected input device (Oscar's device picker, rt-8). null = system default. */
+  /** Selected input device (Business Analyst's device picker, rt-8). null = system default. */
   deviceId: string | null;
-  /** Selected output/speaker device (Oscar's speaker picker, rt-8). null = system default. */
+  /** Selected output/speaker device (Business Analyst's speaker picker, rt-8). null = system default. */
   outputDeviceId: string | null;
 }
 
 /** Voices for gpt-realtime-2 (board: Cedar / Marin). god finalizes in rt-6. */
 const REALTIME_VOICE = 'cedar';
 
-/** Warm openers Michael leads with the moment a voice session connects, so he
+/** Warm openers Sekhon Manager leads with the moment a voice session connects, so he
  *  greets the user instead of sitting in silence waiting for them to speak. One
  *  is picked at random per connect so the greeting varies. Hardcoded constants
  *  (never user/external text) — safe to speak verbatim, no sanitization needed. */
@@ -66,23 +66,23 @@ const GREETINGS = [
   "Hi, what's up?",
   "Hey, how's it going?",
   "Hello, how can I help you?",
-  "Hey there, Michael here — what can I do for you?",
+  "Hey there, Sekhon Manager here — what can I do for you?",
   "Hi! What are we working on today?",
   "Hey, good to hear you. What's on your mind?",
   "Hello! What do you need?",
   "Hey, I'm all ears — what's going on?"
 ];
 
-/** Michael's voice persona (rt-6 — the final Phase-1 instructions, authored by god). Michael
+/** Sekhon Manager's voice persona (rt-6 — the final Phase-1 instructions, authored by god). Sekhon Manager
  *  is READ-ONLY: he reports on the hive via the rt-4 read-tools but takes no actions yet. */
 const MICHAEL_PERSONA =
-  `You are Michael — the voice of the orchestrator ("god") of a hive of autonomous Claude coding agents. The person you're talking to is the human who runs the hive; treat them as the boss you're briefing.
+  `You are Sekhon Manager — the voice of the orchestrator ("god") of a hive of autonomous Claude coding agents. The person you're talking to is the human who runs the hive; treat them as the boss you're briefing.
 
 VOICE & STYLE. You speak out loud over a live connection. Be concise and natural — like a sharp, calm chief of staff giving a verbal briefing. Lead with the answer in one sentence, then add detail only if it helps. Never read markdown, file paths, or code aloud unless asked. Use plain spoken numbers and names. Brevity is fine; the human can always ask for more.
 
 WHAT YOU CAN LOOK UP. You have live awareness of the WHOLE hive: a floor snapshot arrives when the call connects, short "(Floor update: …)" notes arrive as things change — trust those first — and your tools cover everything else. ALWAYS call the relevant tool before answering a factual question you can't answer from the snapshot and updates. Your read tools:
 - get_floor_state — the live floor in one call: every agent's status, context fill, breaker and inbox, plus in-flight tasks, as precise data. Prefer this for "what's everyone doing".
-- get_app_info — the Munder Difflin app itself: its version and the latest release notes. Use for "what version is this" or "what's new in this release".
+- get_app_info — the Sekhon AI Office app itself: its version and the latest release notes. Use for "what version is this" or "what's new in this release".
 - get_fleet_status — the live roster: who is active, who the god orchestrator is, and each worker's name, role, and engine.
 - list_agents — the FULL roster INCLUDING archived (inactive) agents, with each agent's engine, working directory, context fill, and breaker state. Use it to enumerate everyone, find who is archived, or see who is near their context limit.
 - get_agent_detail — everything about ONE agent (by name or id): its engine and model, its WORKING DIRECTORY, whether it's active or archived, live status, how full its context window is, tokens used, breaker state, and whether it has memory.
@@ -97,7 +97,7 @@ WHAT YOU CAN LOOK UP. You have live awareness of the WHOLE hive: a floor snapsho
 
 NEVER say "I can't access that", "the tool doesn't allow that", or "I don't have that" BEFORE you have actually CALLED a tool. You CAN read any agent's memory (active OR archived), any agent's working directory, full per-agent status, token usage, context-window fill, schedules, configuration, and the board. When a question is about the hive, call the matching tool FIRST and answer with specific facts — real names, real statuses, real numbers — never a vague guess. Only if a tool genuinely returns nothing do you say so, plainly and briefly.
 
-HIVE VOCABULARY. Agents have an id like "creed-mqp3l5wn" and a friendly name like "Creed"; refer to them by name. "god" is the orchestrator whose voice you are. A card's status is todo, doing, blocked, or done. The circuit breaker is healthy, or steering an agent that's looping or idle. Blocked usually means waiting on the human.
+HIVE VOCABULARY. Agents have an id like "worker-example" and a friendly name like "Quality Lead"; refer to them by name. "god" is the orchestrator whose voice you are. A card's status is todo, doing, blocked, or done. The circuit breaker is healthy, or steering an agent that's looping or idle. Blocked usually means waiting on the human.
 
 WHAT YOU CAN DO. Beyond reporting, you can ACT on the hive by voice: ping an agent, dispatch a task as a 4-part work order, steer a running agent, create / assign / update / delete task cards, hire a new agent, pause / RESUME / halt / kill agents, pause or resume an agent's message delivery, gate a tool for an agent, archive or unarchive an agent, clear an agent's context, create or edit schedules, and change app settings from the allowed list. Soft actions — ping, dispatch, steer, task edits, resume, delivery pause/resume, tool gating, unarchive, and cosmetic settings — happen immediately. Destructive or expensive ones — hire, kill, pause, halt, archive, clear context, schedule changes, and behavior-changing settings — are NEVER done silently: you read the action back and wait for the human to confirm out loud.
 
@@ -124,7 +124,7 @@ const listeners = new Set<() => void>();
 let session: RealtimeSession | null = null;
 /** The mic stream we opened (so we can stop its tracks on teardown). */
 let stream: MediaStream | null = null;
-/** The <audio> sink for Michael's voice. */
+/** The <audio> sink for Sekhon Manager's voice. */
 let audioEl: HTMLAudioElement | null = null;
 /** Guards against overlapping connect() calls racing the async mint/connect. */
 let connecting = false;
@@ -142,10 +142,10 @@ const COST_GUARD_TICK_MS = 10_000;
 
 /** N3-seam (rt-10 hardening): a completion summary carries dispatch objective text.
  *  It CANNOT escalate — MAIN independently gates every destructive/forbidden op
- *  (Pam confirmed) — but neutralize it before injecting into the model as a system
+ *  (Creative Director confirmed) — but neutralize it before injecting into the model as a system
  *  notification (defense in depth): collapse newlines, strip the parens that frame
  *  my notification, drop role markers + classic prompt-injection lead-ins, and cap
- *  length. Jim does the matching watcher-side half on the summary it emits. */
+ *  length. Business Lead does the matching watcher-side half on the summary it emits. */
 function sanitizeForVoice(s: string): string {
   return (s || '')
     .replace(/[\r\n]+/g, ' ')
@@ -213,7 +213,7 @@ function wire(s: RealtimeSession): void {
   });
 
   // rt-9 cost meter: each completed response reports token usage on the raw transport
-  // `response.done` event. Hand it straight to Oscar's cost store (its normalizer
+  // `response.done` event. Hand it straight to Business Analyst's cost store (its normalizer
   // tolerates camel/snake-case + missing fields). Best-effort — never break the loop.
   s.on('transport_event', (event) => {
     try {
@@ -254,14 +254,14 @@ function teardownMedia(): void {
 function micFriendly(msg: string): string {
   const m = msg.toLowerCase();
   if (m.includes('permission') || m.includes('notallowed') || m.includes('denied'))
-    return 'microphone permission denied — allow mic access to talk to Michael';
+    return 'microphone permission denied — allow mic access to talk to Sekhon Manager';
   if (m.includes('notfound') || m.includes('device'))
     return 'no microphone found — check your input device';
   return msg;
 }
 
 /**
- * Open/close the main-process mic permission gate for the realtime session (Oscar's
+ * Open/close the main-process mic permission gate for the realtime session (Business Analyst's
  * rt-8 gate, src/main/index.ts). That gate grants getUserMedia only while
  * `freeflowEnabled || realtimeVoiceEnabled` is true, and the check is SYNCHRONOUS — so
  * we must flip `realtimeVoiceEnabled` true and let it settle BEFORE opening the mic, then
@@ -278,7 +278,7 @@ async function setMicGate(on: boolean): Promise<void> {
 }
 
 /**
- * Apply the chosen output device to our <audio> sink (Oscar's speaker picker, rt-8).
+ * Apply the chosen output device to our <audio> sink (Business Analyst's speaker picker, rt-8).
  * `setSinkId` is Chromium/Electron-only and not in every lib.dom, so we feature-detect +
  * cast narrowly. Best-effort: if the device is gone or unsupported we stay on the default
  * sink (passing '' selects the system default).
@@ -309,13 +309,13 @@ export async function connect(): Promise<void> {
       return;
     }
 
-    // Open the main-process mic gate BEFORE getUserMedia. Oscar's rt-8 permission check
+    // Open the main-process mic gate BEFORE getUserMedia. Business Analyst's rt-8 permission check
     // is synchronous, so `realtimeVoiceEnabled` must already be true when the mic opens;
     // we close it again on teardown/error.
     await setMicGate(true);
 
     // Mic with echo-cancellation + noise-suppression + auto-gain, honoring the device
-    // the user picked (Oscar's rt-8 picker). getUserMedia surfaces permission denials.
+    // the user picked (Business Analyst's rt-8 picker). getUserMedia surfaces permission denials.
     const audioConstraints: MediaTrackConstraints = {
       echoCancellation: true,
       noiseSuppression: true,
@@ -324,16 +324,16 @@ export async function connect(): Promise<void> {
     if (state.deviceId) audioConstraints.deviceId = { exact: state.deviceId };
     stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
 
-    // Our own <audio> sink for Michael's voice, routed to the chosen speaker (rt-8).
+    // Our own <audio> sink for Sekhon Manager's voice, routed to the chosen speaker (rt-8).
     audioEl = new Audio();
     audioEl.autoplay = true;
     await applyOutputSink(audioEl, state.outputDeviceId);
 
     const transport = new OpenAIRealtimeWebRTC({ mediaStream: stream, audioElement: audioEl });
-    // Warm-start: a short, best-effort hive snapshot so Michael's first answer is grounded
+    // Warm-start: a short, best-effort hive snapshot so Sekhon Manager's first answer is grounded
     // without a tool round-trip (rt-4 realtimeSessionSummary). Returns '' on failure / never throws.
     let warmStart = await realtimeSessionSummary().catch(() => '');
-    // rt-12: catch up on completions that finished while no session was open, so Michael
+    // rt-12: catch up on completions that finished while no session was open, so Sekhon Manager
     // can mention them as a "since we last talked" warm-start (the closed-session queue).
     try {
       const queued = await window.cth.realtimeDrainCompletions();
@@ -349,7 +349,7 @@ export async function connect(): Promise<void> {
     // (cached input is ~99% cheaper). The snapshot goes in as the FIRST
     // conversation item below, and the floor watcher appends deltas mid-call.
     const agent = new RealtimeAgent({
-      name: 'Michael',
+      name: 'Sekhon Manager',
       instructions: MICHAEL_PERSONA,
       tools: [...realtimeReadTools(), ...realtimeActionTools()]
     });
@@ -402,14 +402,14 @@ export async function connect(): Promise<void> {
     if (warmStart) {
       injectSilent(`(Floor snapshot at connect — orientation only, call your tools for detail: ${sanitizeForVoice(warmStart)})`);
     }
-    // Floor deltas — silent appends that keep Michael's picture live without
+    // Floor deltas — silent appends that keep Sekhon Manager's picture live without
     // touching the cached instructions prefix.
     offFloorDelta = window.cth.onRealtimeFloorDelta?.((d) => {
       if (session !== s) return;
       injectSilent(`(Floor update: ${sanitizeForVoice(d.text)}. Mention it only when relevant — don't interrupt.)`);
     }) ?? null;
     // rt-12: mark the session live (main now pushes completions instead of queuing) and
-    // subscribe so a detected completion makes Michael speak it unprompted.
+    // subscribe so a detected completion makes Sekhon Manager speak it unprompted.
     void window.cth.realtimeSetSessionLive(true);
     offCompletion = window.cth.onRealtimeCompletion((c) => {
       try {
@@ -440,7 +440,7 @@ export async function connect(): Promise<void> {
       model: mint.sessionConfig.model,
       expiresAt: mint.expiresAt
     });
-    // Open the conversation: have Michael speak a warm greeting as his first turn
+    // Open the conversation: have Sekhon Manager speak a warm greeting as his first turn
     // rather than waiting for the user to talk first. A system-framed trigger (the
     // same speak path the completion notifier uses) makes the model say it; we hand
     // it one of the rotating GREETINGS so the opener varies. Best-effort — if the
@@ -498,13 +498,13 @@ export function disconnect(reason: string = 'user'): void {
   setState({ status: 'off', muted: false });
 }
 
-/** Select the microphone (Oscar's device picker, rt-8). Applied on the next connect(). */
+/** Select the microphone (Business Analyst's device picker, rt-8). Applied on the next connect(). */
 export function setDeviceId(deviceId: string | null): void {
   setState({ deviceId });
 }
 
 /**
- * Select the speaker/output device (Oscar's speaker picker, rt-8). Stores the choice and,
+ * Select the speaker/output device (Business Analyst's speaker picker, rt-8). Stores the choice and,
  * if a session is live, re-routes the current <audio> sink immediately; otherwise it's
  * applied on the next connect().
  */
@@ -523,7 +523,7 @@ function getSnapshot(): RealtimeMichaelState {
 }
 
 /**
- * React binding for the Realtime Michael voice loop. Returns the current state plus
+ * React binding for the Realtime Sekhon Manager voice loop. Returns the current state plus
  * `connect()` / `disconnect()` / `setDeviceId()`. A single session is shared across the
  * whole renderer, so every consumer sees the same status.
  */

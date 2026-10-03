@@ -28,6 +28,22 @@ export interface CommandHistoryRow {
   ts: number;
 }
 
+export type LeadStatus = 'new' | 'reviewing' | 'proposal' | 'applied' | 'won' | 'lost';
+export interface LeadRow {
+  id: number;
+  title: string;
+  client: string | null;
+  source: string | null;
+  sourceUrl: string | null;
+  budget: string | null;
+  deadline: string | null;
+  fit: string | null;
+  notes: string | null;
+  status: LeadStatus;
+  createdAt: number;
+  updatedAt: number;
+}
+
 /**
  * Ordered, append-only migrations. Index N takes the DB from user_version N to
  * N+1. To evolve the schema, APPEND a new function — never edit an existing one
@@ -36,7 +52,7 @@ export interface CommandHistoryRow {
  * FUTURE (do NOT build in v1 — reserved so the array isn't painted into a corner):
  *   - Phase B: `agents` + `message_queue` mirror of the renderer roster/queues
  *     (dual-write), enabling the eventual authority flip off localStorage.
- *   - Cross-lane (Lane A #6): migrate Jim's cost ledger onto this DB so his
+ *   - Cross-lane (Lane A #6): migrate Business Lead's cost ledger onto this DB so his
  *     circuit-breaker can move off transcript-polling. Column names match his
  *     <harnessHome>/hive/cost-ledger.jsonl keys 1:1 for a straight INSERT…SELECT
  *     (coordinated w/ jim-mq290qkn 2026-06-06):
@@ -63,6 +79,28 @@ const MIGRATIONS: Array<(db: Database.Database) => void> = [
         ts       INTEGER NOT NULL
       );
       CREATE INDEX IF NOT EXISTS idx_ch_agent_ts ON command_history(agent_id, ts DESC);
+    `);
+  },
+  // → user_version 2: durable freelance lead pipeline for the Agency workspace.
+  (db) => {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS agency_leads (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        title      TEXT NOT NULL,
+        client     TEXT,
+        source     TEXT,
+        source_url TEXT,
+        budget     TEXT,
+        deadline   TEXT,
+        fit        TEXT,
+        notes      TEXT,
+        status     TEXT NOT NULL DEFAULT 'new'
+                   CHECK(status IN ('new','reviewing','proposal','applied','won','lost')),
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_agency_leads_status_updated
+        ON agency_leads(status, updated_at DESC);
     `);
   }
 ];
@@ -164,6 +202,66 @@ export class PersistStore {
     return this.db.prepare(
       "SELECT id, agent_id AS agentId, cwd, text, ts FROM command_history WHERE text LIKE ? ESCAPE '\\' ORDER BY ts DESC, id DESC LIMIT ?"
     ).all(needle, lim) as CommandHistoryRow[];
+  }
+
+  listLeads(): LeadRow[] {
+    if (!this.db) return [];
+    return this.db.prepare(
+      `SELECT id, title, client, source, source_url AS sourceUrl, budget, deadline, fit, notes,
+              status, created_at AS createdAt, updated_at AS updatedAt
+       FROM agency_leads ORDER BY updated_at DESC, id DESC`
+    ).all() as LeadRow[];
+  }
+
+  addLead(input: Omit<LeadRow, 'id' | 'createdAt' | 'updatedAt'>): LeadRow | null {
+    if (!this.db) return null;
+    const title = (input.title ?? '').trim();
+    if (!title) return null;
+    const now = Date.now();
+    const status: LeadStatus = ['new','reviewing','proposal','applied','won','lost'].includes(input.status)
+      ? input.status : 'new';
+    const clean = (v: string | null | undefined) => typeof v === 'string' && v.trim() ? v.trim() : null;
+    const info = this.db.prepare(
+      `INSERT INTO agency_leads
+       (title, client, source, source_url, budget, deadline, fit, notes, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(title, clean(input.client), clean(input.source), clean(input.sourceUrl), clean(input.budget),
+      clean(input.deadline), clean(input.fit), clean(input.notes), status, now, now);
+    return this.db.prepare(
+      `SELECT id, title, client, source, source_url AS sourceUrl, budget, deadline, fit, notes,
+              status, created_at AS createdAt, updated_at AS updatedAt
+       FROM agency_leads WHERE id = ?`
+    ).get(info.lastInsertRowid) as LeadRow;
+  }
+
+  updateLead(id: number, patch: Partial<LeadRow>): LeadRow | null {
+    if (!this.db || !Number.isInteger(id) || id < 1) return null;
+    const current = this.db.prepare('SELECT * FROM agency_leads WHERE id = ?').get(id) as Record<string, unknown> | undefined;
+    if (!current) return null;
+    const status = typeof patch.status === 'string' && ['new','reviewing','proposal','applied','won','lost'].includes(patch.status)
+      ? patch.status : String(current.status);
+    const pick = (key: keyof LeadRow, dbKey: string) => Object.prototype.hasOwnProperty.call(patch, key)
+      ? (typeof patch[key] === 'string' && String(patch[key]).trim() ? String(patch[key]).trim() : null)
+      : (current[dbKey] ?? null);
+    const title = Object.prototype.hasOwnProperty.call(patch, 'title') && typeof patch.title === 'string'
+      ? patch.title.trim() : String(current.title);
+    if (!title) return null;
+    this.db.prepare(
+      `UPDATE agency_leads SET title=?, client=?, source=?, source_url=?, budget=?, deadline=?, fit=?, notes=?, status=?, updated_at=?
+       WHERE id=?`
+    ).run(title, pick('client','client'), pick('source','source'), pick('sourceUrl','source_url'),
+      pick('budget','budget'), pick('deadline','deadline'), pick('fit','fit'), pick('notes','notes'),
+      status, Date.now(), id);
+    return this.db.prepare(
+      `SELECT id, title, client, source, source_url AS sourceUrl, budget, deadline, fit, notes,
+              status, created_at AS createdAt, updated_at AS updatedAt
+       FROM agency_leads WHERE id = ?`
+    ).get(id) as LeadRow;
+  }
+
+  deleteLead(id: number): boolean {
+    if (!this.db || !Number.isInteger(id) || id < 1) return false;
+    return this.db.prepare('DELETE FROM agency_leads WHERE id = ?').run(id).changes > 0;
   }
 }
 

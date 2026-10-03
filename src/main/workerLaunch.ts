@@ -61,7 +61,7 @@ export function buildWorkerLaunch(opts: {
   // but the PTY layer takes ONE executable name (resolveCommand) plus argv — the
   // unsplit line made node-pty exec a binary literally named like the whole
   // string → ENOENT → the worker died within ~1s of spawning while its request
-  // archived as .done (this killed both flag-carrying Ryan spawns on 2026-08-16;
+  // archived as .done (this killed both flag-carrying Research Assistant spawns on 2026-08-16;
   // only the bare-`claude` one lived). Split with the SAME tokenizer the
   // renderer's spawn flows use, and hand the flags over as argv.
   const tokens = tokenizeCommand(command);

@@ -1,6 +1,6 @@
-appId: in.munderdiffl.app
-productName: Munder Difflin
-copyright: Copyright © 2026 Chaitanya Giri
+appId: in.sekhon.aioffice
+productName: Sekhon AI Office
+copyright: Copyright © 2026 Sekhon AI Office contributors
 
 # Where electron-updater looks for new versions (latest*.yml + assets on GitHub
 # releases). The release workflow still uploads assets itself (--publish never);
@@ -8,8 +8,8 @@ copyright: Copyright © 2026 Chaitanya Giri
 # knows which repo to poll.
 publish:
   provider: github
-  owner: chaitanyagiri
-  repo: munder-difflin
+  owner: Jagjeetsekhon3
+  repo: sekhon-ai-office-source
 
 # Bake the update toast's "What's new" list straight into latest*.yml.
 #
@@ -38,8 +38,9 @@ afterSign: build/notarize.cjs
 # Register the munderdifflin:// URL scheme (shareable-hires deep link) in the
 # packaged app: CFBundleURLTypes on macOS, registry entries via NSIS on Windows.
 protocols:
-  - name: Munder Difflin
+  - name: Sekhon AI Office
     schemes:
+      - sekhonaioffice
       - munderdifflin
 
 # electron-vite emits the app into out/; package exactly that plus what the
@@ -92,15 +93,15 @@ mac:
   # the privacy prompt and, for a signed app, remembers the grant — so the user
   # is asked ONCE instead of on every agent action.
   extendInfo:
-    NSDocumentsFolderUsageDescription: "Munder Difflin runs your Claude Code agents, which read and write files in the project folders you point them at."
-    NSDesktopFolderUsageDescription: "Munder Difflin's agents may work on projects located on your Desktop."
-    NSDownloadsFolderUsageDescription: "Munder Difflin's agents may work on projects located in your Downloads."
-    NSRemovableVolumesUsageDescription: "Munder Difflin's agents may work on projects located on external volumes."
-    NSNetworkVolumesUsageDescription: "Munder Difflin's agents may work on projects located on network volumes."
+    NSDocumentsFolderUsageDescription: "Sekhon AI Office runs your Claude Code agents, which read and write files in the project folders you point them at."
+    NSDesktopFolderUsageDescription: "Sekhon AI Office's agents may work on projects located on your Desktop."
+    NSDownloadsFolderUsageDescription: "Sekhon AI Office's agents may work on projects located in your Downloads."
+    NSRemovableVolumesUsageDescription: "Sekhon AI Office's agents may work on projects located on external volumes."
+    NSNetworkVolumesUsageDescription: "Sekhon AI Office's agents may work on projects located on network volumes."
     # The microphone is used by two opt-in, off-by-default voice features: Free
-    # Flow dictation (Groq transcription) and Realtime Michael (live voice chat
+    # Flow dictation (Groq transcription) and Realtime Sekhon Manager (live voice chat
     # with the orchestrator via OpenAI). Mic access only happens while one is on.
-    NSMicrophoneUsageDescription: "Munder Difflin uses your microphone only for its opt-in voice features: Free Flow dictation (transcribed by Groq into the message queue) and talking to Michael in real time (streamed to OpenAI). The mic is off unless you turn one of these on."
+    NSMicrophoneUsageDescription: "Sekhon AI Office uses your microphone only for its opt-in voice features: Free Flow dictation (transcribed by Groq into the message queue) and talking to Sekhon Manager in real time (streamed to OpenAI). The mic is off unless you turn one of these on."
   # Hardened runtime + entitlements so the spawned `claude` agents inherit this
   # app's TCC responsibility (one grant covers them all) and node-pty can load.
   hardenedRuntime: true
@@ -130,10 +131,10 @@ mac:
       arch: [universal]
     - target: zip
       arch: [universal]
-  artifactName: Munder-Difflin-${version}-mac-${arch}.${ext}
+  artifactName: Sekhon-AI-Office-${version}-mac-${arch}.${ext}
 
 dmg:
-  title: Munder Difflin ${version}
+  title: Sekhon AI Office ${version}
 
 # ---- Windows ----
 win:
@@ -148,11 +149,11 @@ nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
-  artifactName: Munder-Difflin-${version}-win-x64-setup.exe
-  shortcutName: Munder Difflin
+  artifactName: Sekhon-AI-Office-${version}-win-x64-setup.exe
+  shortcutName: Sekhon AI Office
 
 portable:
-  artifactName: Munder-Difflin-${version}-win-x64-portable.exe
+  artifactName: Sekhon-AI-Office-${version}-win-x64-portable.exe
 
 # ---- Linux ----
 linux:
@@ -161,4 +162,4 @@ linux:
   target:
     - target: AppImage
       arch: [x64]
-  artifactName: Munder-Difflin-${version}-linux-x86_64.AppImage
+  artifactName: Sekhon-AI-Office-${version}-linux-x86_64.AppImage

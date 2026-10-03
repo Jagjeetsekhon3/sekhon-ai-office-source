@@ -1,8 +1,8 @@
 {
-  "_comment": "Settings → General hero card. Edited here and fetched by the app at runtime, so plan copy and sponsors change WITHOUT shipping a build. Data only — every field renders as escaped text, never as markup. Unknown fields are ignored; anything malformed falls back to the app's built-in defaults. URLs must be https.",
+  "_comment": "Sekhon AI Office is free/local-first during development. No paid plan, upgrade CTA, sponsor, or purchase link is exposed here.",
   "plan": {
-    "label": "Local",
-    "blurb": "Every agent runs on your machine, in your folders, under your own keys. No seat limit, nothing metered."
+    "label": "Free · Local",
+    "blurb": "Run agents on your machine with your own API keys and local models. No Sekhon AI Office seat fee or feature paywall."
   },
   "sponsor": null,
   "notice": null

@@ -46,8 +46,8 @@ export interface HeroPayload {
  *  fails, so the card is never empty and never waits on the network to render. */
 export const DEFAULT_HERO: HeroPayload = {
   plan: {
-    label: 'Local',
-    blurb: 'Every agent runs on your machine, in your folders, under your own keys. No seat limit, nothing metered.'
+    label: 'Free · Local',
+    blurb: 'Run agents on your machine with your own API keys and local models. No Sekhon AI Office seat fee or feature paywall.'
   },
   sponsor: null,
   notice: null

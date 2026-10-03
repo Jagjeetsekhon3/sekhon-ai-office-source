@@ -54,7 +54,7 @@ export interface HiveAgentMeta {
   capabilities?: string[];
   cwd: string;
   isGod?: boolean;
-  /** Michael's prep assistant — send-only; enriches prompts and forwards them. */
+  /** Sekhon Manager's prep assistant — send-only; enriches prompts and forwards them. */
   isAssistant?: boolean;
 }
 
@@ -269,7 +269,7 @@ export interface HarnessConfig {
   autoMode: boolean;
   defaultCommand: string;
   defaultModel?: string;
-  /** Which provider+model powers the GOD orchestrator ("Michael"). Default
+  /** Which provider+model powers the GOD orchestrator ("Sekhon Manager"). Default
    *  'claude' / 'claude-opus-4-8'. Mirrors src/main/config.ts. */
   godProvider?: AgentProvider;
   godModel?: string;
@@ -304,12 +304,12 @@ export interface HarnessConfig {
   freeflowEnabled?: boolean;
   groqApiKey?: string;
   freeflowModel?: string;
-  /** Realtime Michael voice loop — true ONLY while a session holds the mic
+  /** Realtime Sekhon Manager voice loop — true ONLY while a session holds the mic
    *  (renderer session sets it at start()/stop()); the main mic permission gate
    *  reads it. Default off. */
   realtimeVoiceEnabled?: boolean;
   /** Realtime voice idle auto-disconnect (ms); default 180000 (3 min), 0 = never.
-   *  Tuned in Settings → Realtime Michael; the cost cap stays the runaway guard. */
+   *  Tuned in Settings → Realtime Sekhon Manager; the cost cap stays the runaway guard. */
   realtimeIdleDisconnectMs?: number;
   costCapUsd?: number;
   costCapTokens?: number;
@@ -521,6 +521,22 @@ export interface CommandHistoryEntry {
   cwd: string | null;
   text: string;
   ts: number;
+}
+
+export type AgencyLeadStatus = 'new' | 'reviewing' | 'proposal' | 'applied' | 'won' | 'lost';
+export interface AgencyLead {
+  id: number;
+  title: string;
+  client: string | null;
+  source: string | null;
+  sourceUrl: string | null;
+  budget: string | null;
+  deadline: string | null;
+  fit: string | null;
+  notes: string | null;
+  status: AgencyLeadStatus;
+  createdAt: number;
+  updatedAt: number;
 }
 
 /** A GitHub issue, normalized for the renderer (labels/assignees flattened to names). */
@@ -756,7 +772,7 @@ const api = {
   hiveRenameAgent: (id: string, name: string): Promise<{ ok: boolean; name?: string; error?: string }> =>
     ipcRenderer.invoke('hive:renameAgent', id, name),
   /** Put an agent on hold (the human has them 1:1) or take it off. Held agents
-   *  keep running; Michael is told to stop routing work to them. */
+   *  keep running; Sekhon Manager is told to stop routing work to them. */
   hiveSetAgentHold: (id: string, hold: boolean): Promise<{ ok: boolean; onHold?: boolean; error?: string }> =>
     ipcRenderer.invoke('hive:setAgentHold', id, hold),
   hiveBoard: (): Promise<string> => ipcRenderer.invoke('hive:board'),
@@ -766,12 +782,12 @@ const api = {
   hiveInbox: (id: string): Promise<HiveMessage[]> => ipcRenderer.invoke('hive:inbox', id),
   /** Voice read-layer: recent message CONTENT (inbox/outbox bodies), REDACTED in
    *  main. Pass { id } for one message, { agentId } to scope to one mailbox, or
-   *  {} for the whole floor. Backs Realtime Michael's get_messages. The renderer
+   *  {} for the whole floor. Backs Realtime Sekhon Manager's get_messages. The renderer
    *  never sees a raw body or a secret — stripping happens main-side. */
   hiveMessages: (opts?: { agentId?: string; id?: string; limit?: number; includeArchived?: boolean }): Promise<VoiceMessage[]> =>
     ipcRenderer.invoke('hive:messages', opts ?? {}),
   /** Consolidated per-agent directory (registry + telemetry + context), incl.
-   *  archived agents. Backs Realtime Michael's get_agent_detail / list_agents. */
+   *  archived agents. Backs Realtime Sekhon Manager's get_agent_detail / list_agents. */
   hiveAgentDirectory: (): Promise<AgentDirectory> => ipcRenderer.invoke('hive:agentDirectory'),
 
   // ─── Ephemeral workers (P4 — Slack-triggered isolated workers) ───────────
@@ -860,6 +876,18 @@ const api = {
   /** Substring search over prompt text, most-recent-first. */
   historySearch: (query: string, limit?: number): Promise<CommandHistoryEntry[]> =>
     ipcRenderer.invoke('history:search', query, limit),
+  // ─── Advertising Agency leads (SQLite) ────────────────────────────────────
+  leadsList: (): Promise<AgencyLead[]> => ipcRenderer.invoke('leads:list'),
+  leadsAdd: (lead: {
+    title: string; client?: string; source?: string; sourceUrl?: string;
+    budget?: string; deadline?: string; fit?: string; notes?: string;
+  }): Promise<{ ok: boolean; lead?: AgencyLead; error?: string }> =>
+    ipcRenderer.invoke('leads:add', lead),
+  leadsUpdate: (id: number, patch: Partial<AgencyLead>): Promise<{ ok: boolean; lead?: AgencyLead; error?: string }> =>
+    ipcRenderer.invoke('leads:update', id, patch),
+  leadsDelete: (id: number): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('leads:delete', id),
+
   hiveSend: (msg: Partial<HiveMessage>, from?: string): Promise<{ ok: boolean; error?: string; message?: HiveMessage }> =>
     ipcRenderer.invoke('hive:send', msg, from),
 
@@ -1140,7 +1168,7 @@ const api = {
   hiveSetArchived: (id: string, archived: boolean): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke('hive:setArchived', id, archived),
 
-  // ─── Slack integration (Slack message → Michael's queue) ─────────────────────
+  // ─── Slack integration (Slack message → Sekhon Manager's queue) ─────────────────────
   /** Register a listener for inbound Slack messages; returns an unsubscribe fn.
    *  The message carries the thread coordinates needed to reply in-thread. */
   onSlackMessage: (cb: (msg: { text: string; channel: string; ts: string; thread_ts: string; autonomyPreamble?: string; files?: { path: string; name: string; mimetype: string }[] }) => void): (() => void) => {
@@ -1290,6 +1318,24 @@ const api = {
     ipcRenderer.invoke('integrations:remove', req),
   integrationsTest: (req: { id: string; path?: string }): Promise<{ ok: boolean; status?: number; error?: string }> =>
     ipcRenderer.invoke('integrations:test', req),
+  // Local model manager — loopback-only Ollama operations implemented in main.
+  // No shell commands and no arbitrary remote URLs.
+  localOllamaList: (baseUrl: string): Promise<{
+    ok: boolean;
+    models?: Array<{ name: string; size?: number; modifiedAt?: string }>;
+    error?: string;
+  }> => ipcRenderer.invoke('localModels:ollamaList', baseUrl),
+  localOllamaPull: (req: { baseUrl: string; model: string }): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('localModels:ollamaPull', req),
+  localOllamaDelete: (req: { baseUrl: string; model: string }): Promise<{ ok: boolean; error?: string }> =>
+    ipcRenderer.invoke('localModels:ollamaDelete', req),
+  localOpenAiList: (baseUrl: string): Promise<{
+    ok: boolean;
+    baseUrl?: string;
+    models?: Array<{ id: string; ownedBy?: string }>;
+    error?: string;
+  }> => ipcRenderer.invoke('localModels:openAiList', baseUrl),
+
   // Per-CLI-provider BYOK keys — WRITE-ONLY. `providerKeySet` stores a backend key one
   // way (never echoed); `providerKeyHas` returns only a boolean; no method ever returns
   // the plaintext. Keys are materialized MAIN-ONLY at spawn.
@@ -1299,7 +1345,7 @@ const api = {
     ipcRenderer.invoke('providerKey:has', backend),
   providerKeyClear: (backend: string): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke('providerKey:clear', backend),
-  // Realtime Michael (voice orchestrator) — MAIN mints a short-lived EPHEMERAL token
+  // Realtime Sekhon Manager (voice orchestrator) — MAIN mints a short-lived EPHEMERAL token
   // from the BYOK OpenAI key; the real key NEVER crosses IPC. `realtimeHasOpenAiKey`
   // is a presence boolean only (gates the voice toggle, like providerKeyHas).
   realtimeHasOpenAiKey: (): Promise<boolean> =>
@@ -1324,7 +1370,7 @@ const api = {
   realtimeActionCancel: (): Promise<{ ok: boolean; spoken: string; needsConfirm?: boolean }> =>
     ipcRenderer.invoke('realtime:action:cancel'),
   // rt-12 completion seam — a voice-dispatched task finished. `summary` is the
-  // human-speakable line Michael relays; the rest is context for a toast/log.
+  // human-speakable line Sekhon Manager relays; the rest is context for a toast/log.
   onRealtimeCompletion: (
     cb: (evt: { correlationId: string; kind: string; targetAgentId: string; taskId?: string; summary: string; completedAt: number; objective?: string }) => void
   ): (() => void) => {

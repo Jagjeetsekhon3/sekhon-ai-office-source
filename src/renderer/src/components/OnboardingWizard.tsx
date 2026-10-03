@@ -109,9 +109,35 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   );
   const [error, setError] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
+  const [localModels, setLocalModels] = useState<string[]>([]);
+  const [localModelNote, setLocalModelNote] = useState('');
+
+  const discoverSekhonLocal = async () => {
+    setLocalModelNote('Checking Ollama on this computer…');
+    try {
+      const r = await window.cth.localOllamaList('http://localhost:11434');
+      if (!r.ok) {
+        setLocalModels([]);
+        setLocalModelNote(r.error ?? 'Ollama is not reachable.');
+        return;
+      }
+      const names = (r.models ?? []).map((m) => m.name).filter(Boolean);
+      setLocalModels(names);
+      if (names.length) {
+        setGodModel((current) => current && names.includes(current) ? current : names[0]);
+        setLocalModelNote(`${names.length} local model${names.length === 1 ? '' : 's'} found in Ollama.`);
+      } else {
+        setGodModel(undefined);
+        setLocalModelNote('Ollama is running, but no models are installed yet.');
+      }
+    } catch (e) {
+      setLocalModels([]);
+      setLocalModelNote(e instanceof Error ? e.message : String(e));
+    }
+  };
 
   // Which engine CLIs are actually on this machine. The picker used to record the
-  // choice blind; the first check happened when Michael spawned, and for a
+  // choice blind; the first check happened when Sekhon Manager spawned, and for a
   // provider with no installer that meant a first run where nothing ever booted.
   // `undefined` = probe not back yet (or failed): rows show no badge and nothing
   // is blocked, because a broken probe must not lock a new user out.
@@ -415,8 +441,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                         Each option is a <strong>CLI engine</strong> (Claude Code, Codex,
                         Antigravity/Gemini, or a local proxy like Qwen). Engines marked
                         INSTALLED are already on this machine; INSTALLS ON FIRST RUN means the app
-                        sets it up when Michael first starts.
-                        <strong> Your clone</strong> (Michael) is the engine that orchestrates the whole
+                        sets it up when Sekhon Manager first starts.
+                        <strong> Your Sekhon Manager</strong> is the engine that orchestrates the whole
                         hive. Recommended: Claude Code · Opus 4.8 · 1M. Other providers can be wired
                         per agent later.
                       </Trans>
@@ -442,9 +468,14 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                           checked={sel}
                           onChange={() => {
                             setGodProvider(p.id);
-                            // Reset the model to the new provider's recommended pick so the
-                            // dropdown below always shows a valid model for the chosen engine.
-                            setGodModel(p.recommendedOrchestratorModel);
+                            if (p.id === 'sekhon-local') {
+                              setGodModel(undefined);
+                              void discoverSekhonLocal();
+                            } else {
+                              // Reset the model to the new provider's recommended pick so the
+                              // dropdown below always shows a valid model for the chosen engine.
+                              setGodModel(p.recommendedOrchestratorModel);
+                            }
                           }}
                           style={{ width: 16, height: 16, flexShrink: 0 }}
                         />
@@ -490,7 +521,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                       </label>
                     );
                   })}
-                  {/* Engines a WORKER can run but Michael cannot (issue #355): shown
+                  {/* Engines a WORKER can run but Sekhon Manager cannot (issue #355): shown
                       disabled instead of hidden, so "Copilot is missing" reads as the
                       real constraint — no inbox drain path — not as "unsupported". */}
                   {onboardingEngineChoices().workersOnly.map((p) => (
@@ -552,13 +583,27 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                     onChange={(e) => setGodModel(e.target.value || undefined)}
                     style={inputStyle}
                   >
-                    {modelsForProvider(godProvider).map((m) => (
+                    {(godProvider === 'sekhon-local'
+                      ? localModels.map((id) => ({ id, label: id }))
+                      : modelsForProvider(godProvider)
+                    ).map((m) => (
                       <option key={m.label} value={m.id ?? ''}>{m.label}</option>
                     ))}
                   </select>
-                  <div style={{ fontSize: 12, color: 'var(--cth-ink-500)' }}>
-                    {t('onboarding.orchestrator.modelNote')}
-                  </div>
+                  {godProvider === 'sekhon-local' ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 12, color: 'var(--cth-ink-500)' }}>
+                        {localModelNote || 'Select Sekhon Local to discover installed Ollama models.'}
+                      </span>
+                      <PixelButton variant="ghost" size="sm" onClick={() => { void discoverSekhonLocal(); }}>
+                        refresh local models
+                      </PixelButton>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 12, color: 'var(--cth-ink-500)' }}>
+                      {t('onboarding.orchestrator.modelNote')}
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -771,7 +816,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                       }
                       // Same idea for the engine: refuse here, with the reason on
                       // screen, instead of letting a pick that cannot boot through
-                      // to a Michael that never starts.
+                      // to a Sekhon Manager that never starts.
                       if (step === 'orchestrator' && engineBlocked) {
                         setError(`${providerPreset(godProvider).label} is not installed. Install it and press "check again", or pick another engine.`);
                         return;

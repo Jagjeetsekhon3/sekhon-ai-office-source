@@ -222,7 +222,7 @@ export const OFFICE_THEME: ThemeConfig = {
  *  briefing room (boardroom zone) + break room (cafeteria zone) with the coffee
  *  economy. PLACEHOLDER ART: the map reuses the office tileset gids, so the
  *  tilesets / monitor / palette / cast below reuse the office theme verbatim —
- *  Pam's license-clean B99 tileset + cast likenesses (§C/§D) drop into those
+ *  Creative Director's license-clean B99 tileset + cast likenesses (§C/§D) drop into those
  *  same seams later. Only the layout-bound anchors (seats, café, coffee, props,
  *  errands) are authored to brooklyn99.tmj's own coordinates. */
 export const BROOKLYN99_THEME: ThemeConfig = {
@@ -280,7 +280,7 @@ export const BROOKLYN99_THEME: ThemeConfig = {
   ],
   // PLACEHOLDER: brooklyn99.tmj paints the office desk stamp (monitor gid 365).
   monitor: OFFICE_THEME.monitor,
-  // PLACEHOLDER: office palette + cast until Pam's B99 art (§C/§D) lands.
+  // PLACEHOLDER: office palette + cast until Creative Director's B99 art (§C/§D) lands.
   palette: OFFICE_THEME.palette,
   cast: OFFICE_THEME.cast,
 };
@@ -295,5 +295,6 @@ export const THEMES: Partial<Record<ThemeId, ThemeConfig>> = {
 /** Look up a theme by id, falling back to the office theme if unknown/missing
  *  (a bad/absent show bundle must never break the floor — see report §E). */
 export function getTheme(id: ThemeId): ThemeConfig {
-  return THEMES[id] ?? OFFICE_THEME;
+  void id;
+  return OFFICE_THEME;
 }

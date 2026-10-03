@@ -1,5 +1,14 @@
 # Changelog
 
+## Sekhon cleanup — 2026-10-03
+
+- Sekhon Manager and business-role names throughout onboarding, avatar selection, voice and agent prompts.
+- Existing default agent names migrate without changing IDs, sessions or saved work.
+- Neutral office dialogue and Sekhon release/update messages.
+- Sekhon installer links and hire links, with legacy import compatibility.
+- No Sekhon paid-plan or sponsor controls; cloud API usage remains separate.
+
+
 All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -96,7 +105,7 @@ re-implemented rather than merged:
 - [#248](https://github.com/chaitanyagiri/munder-difflin/pull/248) [@djbiz](https://github.com/djbiz): a floor rebuild that cannot get a WebGL context retries instead of failing
 - [#270](https://github.com/chaitanyagiri/munder-difflin/pull/270) [@BUGHUNTER-SACHIN](https://github.com/BUGHUNTER-SACHIN): /compact is not enqueued for an undeliverable agent
 - [#271](https://github.com/chaitanyagiri/munder-difflin/pull/271) [@HsienW](https://github.com/HsienW): a typed hook-event payload contract
-- [#282](https://github.com/chaitanyagiri/munder-difflin/pull/282) [@savvaskoualis](https://github.com/savvaskoualis): a renamed god identity no longer reverts to "Michael"
+- [#282](https://github.com/chaitanyagiri/munder-difflin/pull/282) [@savvaskoualis](https://github.com/savvaskoualis): a renamed god identity no longer reverts to "Sekhon Manager"
 - [#284](https://github.com/chaitanyagiri/munder-difflin/pull/284) [@HundredBillion](https://github.com/HundredBillion): the Settings save button moves into the modal footer
 - [#286](https://github.com/chaitanyagiri/munder-difflin/pull/286) [@HundredBillion](https://github.com/HundredBillion): every config write is announced so Settings stops going stale
 - [#310](https://github.com/chaitanyagiri/munder-difflin/pull/310) [@LavaDMan](https://github.com/LavaDMan): the hive-hook-node test no longer races its own stdin write
@@ -125,8 +134,8 @@ clickable paths in terminal output, one editor instead of two, and 23 community 
 - **The first run after an update shows that release's page.**
 - **A hero card at the top of Settings** with your version, your plan, and a way back to the
   release notes.
-- **A 1:1 hold** that tells Michael to leave an agent alone.
-- **Editable agent names,** and Michael can choose a worker's avatar and accent when he hires.
+- **A 1:1 hold** that tells Sekhon Manager to leave an agent alone.
+- **Editable agent names,** and Sekhon Manager can choose a worker's avatar and accent when he hires.
 - **Gemini CLI and Cursor Agent** join the engine list.
 - **Edit an agent from inside focus mode,** next to its name.
 
@@ -179,7 +188,7 @@ All 23 of these community pull requests landed in this release:
 
 - [#157](https://github.com/chaitanyagiri/munder-difflin/pull/157) [@gpechieu](https://github.com/gpechieu): inherited Claude Code session markers are stripped from an agent's PTY env
 - [#158](https://github.com/chaitanyagiri/munder-difflin/pull/158) [@gpechieu](https://github.com/gpechieu): semantic memory works on Apple Silicon again: embeddings are pinned to CPU on macOS
-- [#159](https://github.com/chaitanyagiri/munder-difflin/pull/159) [@gpechieu](https://github.com/gpechieu): reliable spawn, teardown and floor cards for the workers Michael hires
+- [#159](https://github.com/chaitanyagiri/munder-difflin/pull/159) [@gpechieu](https://github.com/gpechieu): reliable spawn, teardown and floor cards for the workers Sekhon Manager hires
 - [#165](https://github.com/chaitanyagiri/munder-difflin/pull/165) [@rajpreetcodes](https://github.com/rajpreetcodes): a `~` in the harness home folder resolves, so setup cannot die on ENOENT
 - [#171](https://github.com/chaitanyagiri/munder-difflin/pull/171) [@KrushanPatel](https://github.com/KrushanPatel): CONTRIBUTING.md matches the platforms the app actually supports
 - [#175](https://github.com/chaitanyagiri/munder-difflin/pull/175) [@rekcilyssup](https://github.com/rekcilyssup): a main-process watchdog wakes an idle worker sitting on an undrained inbox
@@ -197,7 +206,7 @@ All 23 of these community pull requests landed in this release:
 - [#203](https://github.com/chaitanyagiri/munder-difflin/pull/203) [@lifelmy](https://github.com/lifelmy): the Crush config env points at the agent's own directory
 - [#210](https://github.com/chaitanyagiri/munder-difflin/pull/210) [@chaitanyagiri](https://github.com/chaitanyagiri): the art licence claims are true again, Modern Interiors is bought
 - [#214](https://github.com/chaitanyagiri/munder-difflin/pull/214) [@pontusm](https://github.com/pontusm): Windows agent processes quit when the app does
-- [#219](https://github.com/chaitanyagiri/munder-difflin/pull/219) [@chaitanyagiri](https://github.com/chaitanyagiri): engine availability is checked before Michael's engine is committed
+- [#219](https://github.com/chaitanyagiri/munder-difflin/pull/219) [@chaitanyagiri](https://github.com/chaitanyagiri): engine availability is checked before Sekhon Manager's engine is committed
 - [#226](https://github.com/chaitanyagiri/munder-difflin/pull/226) [@chaitanyagiri](https://github.com/chaitanyagiri): the floor reports lifetime spend, not spend since the last app restart
 - [#227](https://github.com/chaitanyagiri/munder-difflin/pull/227) [@scy73](https://github.com/scy73): the renderer runs inside Chromium's sandbox
 
@@ -245,7 +254,7 @@ release notes that can carry their own designed page.
   re-fires `/compact` hourly; one odd message id no longer silences an agent's wake nudge; the
   cost ledger stays out of the hive's git history; a root cwd no longer resolves to the projects
   directory; the office floor stops rendering when nobody is looking at it.
-- Agent selection is visible on every card including Michael's — it used to be drawn in each
+- Agent selection is visible on every card including Sekhon Manager's — it used to be drawn in each
   agent's own accent and was invisible on the one card that was always framed.
 
 ### Added
@@ -255,7 +264,7 @@ release notes that can carry their own designed page.
   uninstall. Installs are bounded and containment-checked; uninstall refuses anything that is not
   a `SKILL.md` folder inside a managed root.
 - **Prerequisites** (Settings) — live status for uv, git, Node, MemPalace and every agent engine,
-  with real paths, platform-correct install commands, and a button that asks Michael to fill the
+  with real paths, platform-correct install commands, and a button that asks Sekhon Manager to fill the
   gaps.
 - **Release drops** — a release body can carry an authored HTML page, rendered in a sandboxed
   iframe (`sandbox=""` + `default-src 'none'`) as a centered modal.
@@ -271,7 +280,7 @@ release notes that can carry their own designed page.
 
 ### Changed
 
-- One card size for every agent; Michael is distinguished by surface, not by a heavier border.
+- One card size for every agent; Sekhon Manager is distinguished by surface, not by a heavier border.
 - Command Center tabs wrap when docked and scroll in fullscreen; the `commands` tab was removed.
 - Prerequisites moved out of the Command Center into Settings — it is machine-wide state, not
   something about the agent whose terminal you are reading.
@@ -283,7 +292,7 @@ Community fixes in this release: [@gts-47](https://github.com/gts-47) (#129, #13
 
 ## [0.4.3] — 2026-08-13
 
-**A new brand mark: Michael's portrait replaces the "MD" tile.**
+**A new brand mark: Sekhon Manager's portrait replaces the "MD" tile.**
 The logo is now the character the product is about, drawn in the app's own pixel art on the brand
 yellow. It is authored as pure vector (`docs/logo.svg`) and every raster is generated from that
 one source by `tools/make-logo.cjs`, so the site, the app and all three platform icons can no
@@ -341,11 +350,11 @@ fork never sends events anywhere.
 ## [0.4.1] — 2026-08-13
 
 **The app says what the site says.**
-munderdiffl.in describes Munder Difflin as a clone of you that works around the clock; the app
+munderdiffl.in describes Sekhon AI Office as a clone of you that works around the clock; the app
 still called it a "GOD agent." This release closes that gap. Wording only — no behaviour changes.
 
 ### Changed
-- **Michael is your clone.** Onboarding refers to him as your clone throughout, and his card on
+- **Sekhon Manager is your clone.** Onboarding refers to him as your clone throughout, and his card on
   the floor now carries a **BOSS** tag instead of **GOD** — he's the boss of the agents, you're
   still the boss of him.
 - **Onboarding leads with the product, not the feature list.** The first screen opens on "a clone
@@ -366,7 +375,7 @@ memory, and running agents carry over as-is; there is nothing to migrate.
 ## [0.4.0] — 2026-08-12
 
 **The brand grew up — and the landing page with it.**
-Munder Difflin now looks like one product everywhere: a yellow "MD" mark, matching app icons on
+Sekhon AI Office now looks like one product everywhere: a yellow "MD" mark, matching app icons on
 every platform, and a rebuilt munderdiffl.in that shows the real app instead of describing it.
 
 ### Added
@@ -579,7 +588,7 @@ release your installed app can pick up on its own — 0.3.4 installs get the
 - **Compact Command Center header.** At sidebar width the old header wrapped its
   display-font title onto three lines, stacked "runs the floor" word-per-line, and let
   the two wide toolbar buttons crush everything else. Now: single-line **COMMAND
-  CENTER** title + "Michael runs the floor" subtitle (both ellipsize), and the floor
+  CENTER** title + "Sekhon Manager runs the floor" subtitle (both ellipsize), and the floor
   delivery toggle compressed to ▶ `auto` / ⏸ `paused` with the full explanation in its
   tooltip. The queue header's "clear all" no longer wraps either.
 
@@ -591,14 +600,14 @@ release your installed app can pick up on its own — 0.3.4 installs get the
 
 ## [0.3.4] — 2026-08-06
 
-**The queue you can trust, a Michael who actually knows the floor, and an IDE that shows
+**The queue you can trust, a Sekhon Manager who actually knows the floor, and an IDE that shows
 you everything.** A community release: the headline terminal/queue/roster reliability wave
 is by [@gts-47](https://github.com/gts-47) (Vyapak Goyal), with major fixes by
 [@qschmick](https://github.com/qschmick) ([#110](https://github.com/chaitanyagiri/munder-difflin/pull/110),
 [#111](https://github.com/chaitanyagiri/munder-difflin/pull/111),
 [#112](https://github.com/chaitanyagiri/munder-difflin/pull/112),
 [#114](https://github.com/chaitanyagiri/munder-difflin/pull/114)). Plus four new
-first-party features — **voice Michael with live floor context + full app control**,
+first-party features — **voice Sekhon Manager with live floor context + full app control**,
 **markdown previews** (IDE and ⌘-click in any terminal), **git history / branch compare /
 safe checkout** in the IDE, and a **redesigned six-tab Settings** — alongside **xAI Grok
 and Kimi Code as first-class engines**, **auto-update from GitHub releases**, a
@@ -606,7 +615,7 @@ and Kimi Code as first-class engines**, **auto-update from GitHub releases**, a
 auto-compact switch (default off)**.
 
 ### Added (v0.3.4 feature wave)
-- **Talk mode grows up: live context + full control.** Michael's voice session now opens
+- **Talk mode grows up: live context + full control.** Sekhon Manager's voice session now opens
   with a compact per-agent floor snapshot (status, engine, context fill, breaker, inbox,
   in-flight tasks) and receives silent "(Floor update: …)" notes as things change mid-call
   — most "what's happening" questions need zero look-ups. New read tools: `get_floor_state`
@@ -659,7 +668,7 @@ auto-compact switch (default off)**.
 - **Fullscreen agent roster rail.** The horizontal tab bar ran out of room past a handful of agents and hid the operator controls; it's replaced by a left rail — `+ agent` pinned at the top, god agents ungrouped above everything, workers bucketed under repository headers, restore-team and its dismiss chips pinned at the bottom. An isolated agent's cwd is its own git worktree, so a new `mainRepoRoot` helper follows a linked worktree back to its main checkout (cached per cwd) and groups key on the absolute repo root, so two checkouts with the same name stay separate. Notes render on the row (one line per bullet) instead of behind a hover popover, the note editor becomes a textarea so Enter makes a new bullet instead of dropping every bullet but the first, pause/halt/steer come back in fullscreen, god agents render the full Command Center, and drag-to-reorder carries over (confined to an agent's own repository group). The destructive kill button is gone.
 - **`typing` badge — see why a queue is held.** A message queue held by your own unsent text on an agent's prompt used to look identical to an idle agent with nothing to do. Agent cards and the fullscreen roster now show a **"your draft"** badge whenever you have unsubmitted text on that agent's prompt. It's derived at render from the same check the delivery gate uses, so the badge can never disagree with the reason nothing is being delivered.
 - **[`docs/message-queue.md`](./docs/message-queue.md)** — the delivery contract: who may type into an agent's terminal, when, and what automation is never allowed to do to your text.
-- **Remote Control sessions are named after the agent** ([#81](https://github.com/chaitanyagiri/munder-difflin/pull/81)). claude.ai / the mobile app now shows "Michael", "Jim", … instead of `<hostname>-<random>`, so a floor full of RC sessions is finally tellable-apart. *(gts-47)*
+- **Remote Control sessions are named after the agent** ([#81](https://github.com/chaitanyagiri/munder-difflin/pull/81)). claude.ai / the mobile app now shows "Sekhon Manager", "Business Lead", … instead of `<hostname>-<random>`, so a floor full of RC sessions is finally tellable-apart. *(gts-47)*
 - **Roster shared between dev and a packaged build.** The roster (agents + notes + queues + selection) mirrors to a file beside the hive (`src/main/roster.ts`), so the dev build and the installed app see the same team; localStorage remains the per-origin fallback. Restore-team also runs **in parallel**, fires **on open**, and each restorable agent gets its own ✕ dismiss. *(gts-47)*
 - **Fable 5 + Sonnet 5** in the Claude model picker (Fable 5 is the new default model). The two "default" entries — the harness's configured default vs the CLI's own — are now labeled distinctly in every picker, and every Claude option names a real model. *(gts-47)*
 - **New test suites** — queue delivery, terminal automation + recovery, roster persistence, provider config/automation, codex remote, agent env, and PID release (`npm run test:focused` + `test/proc-kill.test.cjs`). *(gts-47, qschmick)*
@@ -728,8 +737,8 @@ agent engine, the project's **first community-contributed provider**
 
 ## [0.3.2] — 2026-06-27
 
-**Talk to Michael.** The headline is **Realtime Michael** — a low-latency **voice channel to the
-GOD orchestrator**, running alongside the async terminal floor. Press **Talk**, and Michael listens,
+**Talk to Sekhon Manager.** The headline is **Realtime Sekhon Manager** — a low-latency **voice channel to the
+GOD orchestrator**, running alongside the async terminal floor. Press **Talk**, and Sekhon Manager listens,
 answers, and *acts* in real time: he reads the hive (tasks, board, memory, agents, activity) and —
 behind spoken **echo-back confirmation** for anything destructive — creates and assigns work,
 dispatches agents, spawns and kills workers, and steers the floor, all attributed to a distinct
@@ -742,16 +751,16 @@ dedicated **auto-compact** maintenance schedule decoupled from missions, and **p
 metadata**.
 
 > **Live verification note.** The realtime voice loop is **human-verified end-to-end** on a real
-> OpenAI key — connect → mic → Michael answers via the read tools, and the full destructive action
+> OpenAI key — connect → mic → Sekhon Manager answers via the read tools, and the full destructive action
 > path (spoken echo-back confirm → spawn / kill / dispatch → the worker appears on the floor →
 > completion spoken back) was exercised live. It requires **your own OpenAI key with Realtime API
 > access**; without one the **Talk** button stays visibly disabled with a "needs OpenAI key" cue.
 
 ### Added
-- **Realtime Michael — talk to the GOD orchestrator by voice.** A new low-latency realtime channel
-  (OpenAI Realtime API over WebRTC) sits next to the async terminal. A **Talk** toggle (on Michael's
+- **Realtime Sekhon Manager — talk to the GOD orchestrator by voice.** A new low-latency realtime channel
+  (OpenAI Realtime API over WebRTC) sits next to the async terminal. A **Talk** toggle (on Sekhon Manager's
   card and in any fullscreen terminal) opens a mic session with EC/NS/AGC, semantic-VAD turn-taking +
-  barge-in, and a device picker for both microphone and speaker. Michael runs his own persona and
+  barge-in, and a device picker for both microphone and speaker. Sekhon Manager runs his own persona and
   answers in a natural voice, with an `Off → Connecting → Listening → Responding → Working` state
   machine surfaced live on his card (`src/renderer/src/realtime/*`, `src/main/realtime.ts`,
   `RealtimeMichaelToggle.tsx`).
@@ -759,7 +768,7 @@ metadata**.
   client secret** minted main-side from your stored OpenAI key — the real key is decrypted main-only
   and never crosses IPC. The renderer's CSP allows the WebRTC SDP exchange to reach `api.openai.com`
   while keeping everything else locked down (`src/main/realtime.ts`, renderer `index.html` CSP).
-- **Voice action set with tiered echo-back confirmation.** Michael can *do* things by voice — read
+- **Voice action set with tiered echo-back confirmation.** Sekhon Manager can *do* things by voice — read
   tools (tasks / board / memory / agents / activity / cost) plus the full action set: create and
   assign tasks, dispatch agents, pause / steer / halt, spawn / hire, kill, and edit schedules. Every
   **destructive** verb is gated behind a spoken **echo-back confirmation** (a distinct confirm token,
@@ -767,7 +776,7 @@ metadata**.
   (`src/renderer/src/realtime/actions.ts`, `src/main/realtimeActions.ts`).
 - **"Respond when done" completion loop.** Voice-dispatched work reports back on its own: a
   main-process completion watcher detects when a dispatched task finishes (card → done or a done
-  reply in the inbox) and **proactively pushes the event into the live session so Michael speaks it
+  reply in the inbox) and **proactively pushes the event into the live session so Sekhon Manager speaks it
   unprompted**, while a `CompletionToast` shows it on screen. If the session is closed, completions
   queue to a desktop notification and a "completions since last session" warm-start; a `wait_for`
   tool covers the block-until-done case (`src/main/realtimeCompletionWatcher.ts`,
@@ -779,13 +788,13 @@ metadata**.
   toggle, a configurable **spend cap** that auto-disconnects when hit, and a configurable **idle
   auto-disconnect** (default 3 min, 30 s–10 min or Off) so a forgotten-open mic can't run up a bill
   (`src/renderer/src/realtime/cost*`, **Settings → AI Engines**).
-- **Greeting on connect.** When a session goes live, Michael opens with a warm, rotating greeting
+- **Greeting on connect.** When a session goes live, Sekhon Manager opens with a warm, rotating greeting
   ("Hi, what's up?", "Hey, how's it going?", …) instead of waiting in silence — best-effort and
   guarded so a not-yet-ready data channel never blocks a successful connect.
 - **Conversational read-layer.** The voice read tools were reworked to actually answer hive
   questions: `get_memory` no longer dead-ends, and new agent/board tools plus an expanded persona let
-  Michael talk through roster, tasks, and floor state naturally.
-- **Voice read-layer over hive messages (read/brief-only).** Realtime Michael can now read message
+  Sekhon Manager talk through roster, tasks, and floor state naturally.
+- **Voice read-layer over hive messages (read/brief-only).** Realtime Sekhon Manager can now read message
   *content*, not just metadata: a `get_messages` tool returns a **full message by id, one mailbox, or
   the latest across the floor** to brief the operator. **All redaction is main-side** —
   `voiceMessages()` runs every `subject`/`body` through `redactSecrets()` before the result leaves
@@ -795,9 +804,9 @@ metadata**.
   still go through the separate confirm-gated action spine (`src/main/hive.ts` `voiceMessages` +
   `redactSecrets`, `src/renderer/src/realtime/{tools.ts,VOICE-MESSAGE-ACCESS.md}`,
   `test/voice-messages.test.cjs`).
-- **Talk reachable from any fullscreen terminal.** The Talk toggle is no longer Michael-only chrome —
+- **Talk reachable from any fullscreen terminal.** The Talk toggle is no longer Sekhon Manager-only chrome —
   it's reachable in any fullscreen terminal view (the toggle is global/session state, so it's correct
-  everywhere), while the per-session cost HUD stays Michael-only (`FullscreenTerminal.tsx`).
+  everywhere), while the per-session cost HUD stays Sekhon Manager-only (`FullscreenTerminal.tsx`).
 - **OpenAI Realtime key — documented and gated.** **Settings → AI Engines** now documents the
   **OpenAI Realtime key** as its own requirement (the same OpenAI provider key, distinct from your
   Anthropic key; main mints a short-lived token from it per session). The Talk button shows a live
@@ -845,7 +854,7 @@ metadata**.
 ## [0.3.1] — 2026-06-22
 
 Three more coding CLIs join the floor — **OpenCode**, **Crush**, and **pi.dev** — each usable as a
-worker *and* as Michael, with **bring-your-own keys + local LLMs**. Plus two reliability fixes: the
+worker *and* as Sekhon Manager, with **bring-your-own keys + local LLMs**. Plus two reliability fixes: the
 sleep-frozen message router and Codex workers' filesystem permissions.
 
 > **Live verification note.** The three engines are wired end-to-end and selectable as god, and
@@ -894,16 +903,16 @@ sleep-frozen message router and Codex workers' filesystem permissions.
 - **Codex hive workers get full filesystem + auto-approval from spawn (parity with Claude).** A Codex-engine agent in auto mode launched with `-a never -s workspace-write`, whose sandbox scopes writes to the PTY cwd (the user's project). But a hive worker must also write to its agent folder at `<harnessHome>/hive/agents/<id>/` (move `inbox/` → `.done/`, append `memory.md`, drop outbox JSON, write deliverables) — a **different path tree from cwd**, which `workspace-write` blocked. So a freshly spawned Codex worker couldn't complete HIVE PROTOCOL housekeeping and reported "it does not have permissions … grant write permission to the agent folder." Codex's auto-mode flag is now `--dangerously-bypass-approvals-and-sandbox` — the documented equivalent of Claude's `bypassPermissions` / Antigravity's `--dangerously-skip-permissions` (skip all approval prompts **and** drop the OS sandbox), so a Codex worker has the same filesystem access and auto-approval as a Claude worker from the get-go (`src/shared/agentProvider.ts`; reference/copy updated in `src/shared/codexCommands.ts`, `OnboardingWizard.tsx`, `renderer/store/config.ts`). Claude/agy/antigravity behavior is unchanged.
 - **Re-arm the hive message router on wake (god→worker delivery survives sleep).** The outbox→inbox router is a `setInterval` (`hive.routeOnce` every ~1.5s) that, like the always-on beats, freezes during true macOS system sleep. `onSystemResume()` already re-armed the mission scheduler, the fleet/breaker beats, and keep-awake on `powerMonitor` `resume`/`unlock-screen` — but it never re-armed the router. So after a long sleep (e.g. laptop closed overnight) the scheduler→god path recovered while **every agent's outbox silently stopped draining**: god→worker, worker↔worker, and broadcast mail piled up undelivered, and no `message` event was logged. The resume handler now re-arms the router (clear-then-set, idempotent) **and** immediately drains the accumulated backlog instead of waiting for the first post-wake tick; the renderer's idle inbox-wake nudge then wakes each parked recipient once its mail lands (`src/main/index.ts`). Verified by `scripts/verify-keepalive-catchup.mjs` (now also reproduces the pre-fix backlog stall and proves the re-arm + flush).
 - **Open-source model quick-picks + local-setup guides in Add-Agent.** Hiring a worker on a local-capable CLI engine (OpenCode/Crush/pi.dev) now shows curated **OSS-model quick-picks** — a **Local** bucket (Mac-runnable Ollama tags: gpt-oss 20B/120B, Qwen3 30B-A3B/Coder, DeepSeek-R1 32B, Mistral Small, GLM-4.7-Flash, Llama 3.3 70B) and a **third-party OSS provider** bucket (BYOK: gpt-oss/Llama via Groq, DeepSeek-V4-Flash, GLM-4.6, Kimi K2.6, Qwen3-Coder via OpenRouter). Picking one fills the engine-correct slug (OpenCode `local/<tag>`, Crush/pi `ollama/<tag>`; provider slugs identical across engines) and rebuilds the command. Slugs are transcribed from a verified catalog — bleeding-edge frontier models are intentionally left out of code defaults. The Add-Agent help line and **Settings → AI Engines** local-setup area now hyperlink two how-to guides (run on open models · set up on a Mac Mini) (`src/shared/ossModels.ts`, `AddAgentModal.tsx`, `AiEnginesSettings.tsx`).
-- **Crush no longer dies with `Unknown command` on spawn (the hive protocol now reaches it).** A Crush worker was launched as `crush --model <m> --yolo "You are …(the whole hive protocol)"` — the protocol passed as a positional arg. But bare `crush` is an interactive Bubble Tea TUI on a Cobra root command, which reads the first positional as a **subcommand**, so it aborted with `unknown command "You are…"`; the protocol never reached the model, the worker never learned it was a hive agent, and the PTY died. Crush has no `--prompt` flag and `crush run` is one-shot, so the protocol is now **typed into the TUI** instead: a new preset capability `seedDelivery:'type-into-tui'` makes the spawn drop the positional (`crush [--model m] [--yolo]`) and hand the protocol back as a `seedPrompt`, which the renderer types in as the worker's first turn after a boot-grace — through the **same per-pty write-chain as the inbox-wake nudge**, so the seed and a nudge can never jam onto one line. Covers fresh Crush spawns, restores, and Crush-as-Michael (`src/shared/agentProvider.ts`, `src/main/hive.ts`, `src/main/index.ts`, `src/preload/index.ts`, `src/renderer/src/hooks/useHive.ts`, `AddAgentModal.tsx`, `AgentStrip.tsx`, `store.ts`).
+- **Crush no longer dies with `Unknown command` on spawn (the hive protocol now reaches it).** A Crush worker was launched as `crush --model <m> --yolo "You are …(the whole hive protocol)"` — the protocol passed as a positional arg. But bare `crush` is an interactive Bubble Tea TUI on a Cobra root command, which reads the first positional as a **subcommand**, so it aborted with `unknown command "You are…"`; the protocol never reached the model, the worker never learned it was a hive agent, and the PTY died. Crush has no `--prompt` flag and `crush run` is one-shot, so the protocol is now **typed into the TUI** instead: a new preset capability `seedDelivery:'type-into-tui'` makes the spawn drop the positional (`crush [--model m] [--yolo]`) and hand the protocol back as a `seedPrompt`, which the renderer types in as the worker's first turn after a boot-grace — through the **same per-pty write-chain as the inbox-wake nudge**, so the seed and a nudge can never jam onto one line. Covers fresh Crush spawns, restores, and Crush-as-Sekhon Manager (`src/shared/agentProvider.ts`, `src/main/hive.ts`, `src/main/index.ts`, `src/preload/index.ts`, `src/renderer/src/hooks/useHive.ts`, `AddAgentModal.tsx`, `AgentStrip.tsx`, `store.ts`).
 - **Auto restart-and-continue after a first-time engine-CLI install (no dead-end).** When an agent's engine binary (OpenCode/Crush/pi.dev/Codex/…) wasn't installed, the missing-CLI short-circuit ran the provider's installer in the PTY, then printed *"click restart & continue to launch the agent"* — but no such button exists for a not-yet-started agent, so the PTY just sat at `process exited (code 0)` and the agent dead-ended. Now, on a **clean install exit**, the PTY-exit handler auto restart-and-continues: it re-runs the *same* spawn into the *same* pty/window (carrying a `noAutoInstall` flag) so the freshly-installed CLI launches with no user click, and the renderer re-arms that terminal in place (clears the "process exited" line, re-enables input) via a new `pty:relaunch` signal. Provider-agnostic (every engine's installer path) and idempotent by construction — `noAutoInstall` guarantees the installer can never fire twice, and providers with no bundled installer (manual-hint-only) are never armed for relaunch. The install banner copy is now honest ("Installed — launching the agent…") (`src/main/index.ts`, `src/main/pty.ts`, `src/preload/index.ts`, `src/renderer/src/components/terminalPool.ts`).
 
 ## [0.3.0] — 2026-06-21
 
 A platform release: the floor stops being Claude-shaped. **Selectable agent engines** make
-every hire — and Michael himself — a pluggable engine (Claude Code / Antigravity / Codex /
+every hire — and Sekhon Manager himself — a pluggable engine (Claude Code / Antigravity / Codex /
 local providers), each with its own **per-hire skills + MCP catalog** behind a consent UI. A
 new **integrations registry + loopback secret broker** turns "connect a service" into a
-write-only, registry-driven Settings flow. Michael can now **spawn an ephemeral worker straight
+write-only, registry-driven Settings flow. Sekhon Manager can now **spawn an ephemeral worker straight
 from Slack** — reply, then tear it down safely with worktree GC and token caps — surfaced in a
 new **Workers tab**. Plus **temporal date-range skills** and a **worker capability catalog**, a
 **Provider / Hive picker** in onboarding and add-agent, the **Agent Gallery** (the rebranded
@@ -912,9 +921,9 @@ hardening. Everything from v0.2.8 and earlier is included.
 
 ### Added
 - **Selectable agent engines + per-hire capabilities.** A new engine abstraction (`agentProvider` + an `mcpCatalog`, mirrored across a 3-file config) makes the runtime behind each agent *pluggable* — Claude Code, Antigravity, Codex, or a **local provider** (a claw/qwen backend proxy bridge with default-MCP merge). Each hire carries its own **manifest** of allowed skills + MCP servers (a default-deny allowlist over the catalog), with **bundled skills** shipped via Electron `extraResources` (`resources/skills` → `<resources>/skills`) and a **consent UI** that surfaces every skill/MCP a hire wants before it can use it — untrusted hire input is reviewed, never auto-granted.
-- **Swappable Michael (god) engine.** The orchestrator is no longer hard-wired to one CLI: `useHive` gains an engine-spawn path, Onboarding gains an **engine picker** for Michael, and a **change-engine flow** lets you re-home the god orchestrator onto a different engine without rebuilding the floor.
+- **Swappable Sekhon Manager (god) engine.** The orchestrator is no longer hard-wired to one CLI: `useHive` gains an engine-spawn path, Onboarding gains an **engine picker** for Sekhon Manager, and a **change-engine flow** lets you re-home the god orchestrator onto a different engine without rebuilding the floor.
 - **Integrations registry + loopback secret broker.** A declarative **integrations registry** (`src/shared/integrations.ts`) plus a **loopback secret broker** (`src/main/integrationBroker.ts`): secrets are **write-only** (set once, never read back into the renderer) and reached only through the broker over loopback. A **registry-driven Settings UI** (`IntegrationsRegistry`) renders each integration's config form from the spec — conformed to registry spec v1 — and a first wave of **declarative templates** (the canonical schema + initial YC-style templates) ships in the registry. The `integrations:*` surface is exposed to the renderer through a dedicated preload bridge.
-- **God-triggered ephemeral Slack worker loop.** Michael can now **spawn an isolated worker directly in response to a Slack request** — the worker does the work, posts its reply back into the thread, and is then **torn down safely**. Lifecycle hardening adds **worktree garbage collection**, **token-cap wiring** per spawned worker, and a **teardown-safety gate** that refuses to auto-discard a worker's *unintegrated* work. The `pty:spawn` IPC handler was refactored into a reusable `spawnAgentCore` that underpins worker spawning, and a new **Workers tab** surfaces live ephemeral workers in the UI.
+- **God-triggered ephemeral Slack worker loop.** Sekhon Manager can now **spawn an isolated worker directly in response to a Slack request** — the worker does the work, posts its reply back into the thread, and is then **torn down safely**. Lifecycle hardening adds **worktree garbage collection**, **token-cap wiring** per spawned worker, and a **teardown-safety gate** that refuses to auto-discard a worker's *unintegrated* work. The `pty:spawn` IPC handler was refactored into a reusable `spawnAgentCore` that underpins worker spawning, and a new **Workers tab** surfaces live ephemeral workers in the UI.
 - **Temporal date-range skills + worker capability catalog.** A family of date-range skills (`today` / `yesterday` / `thisWeek` / `lastWeek` / `thisMonth` / `thisQuarter` / `thisYear` / `lastMonth` / `lastQuarter` / `lastYear` / `last7Days` / `last30Days` … plus an arbitrary-range `temporal` resolver backed by `temporal/when.mjs`) resolve a named window to concrete ISO dates without hand-math. A **worker capability catalog** lets each spawned worker read exactly which skills and brokered integrations it has and how to call them.
 - **Provider / Hive picker UI.** A new `HivePicker` component plus a `ProviderLogo` set (real provider logos) appear in **onboarding** and the **add-agent** flow, so choosing the engine/provider for a hire is a first-class, visual step instead of a free-text command.
 - **Agent Gallery + six off-the-shelf hires.** The community gallery is rebranded from *The Hiring Fair* to the **Agent Gallery**, and ships **six ready-made, off-the-shelf hires** you can browse, review, and spawn.
@@ -927,7 +936,7 @@ hardening. Everything from v0.2.8 and earlier is included.
 - **VDE prototype (experimental).** An experimental Virtual Desktop Environment prototype lands behind the scenes, with a Groq chat-completion module (`src/main/groq.ts`) powering its AI assist.
 
 ### Fixed
-- **Orchestrator delegates opportunistically to existing agents.** Michael now checks the live roster (active agents in `registry.json` + their state in `fleet.json`) before spawning, and prefers routing a task to an existing agent that already fits — above all when the request names one ("ask Pam…", "have Jim…") — instead of reflexively creating a new agent; he only spawns a fresh one when no existing agent is a sensible fit, and says that he checked. Encoded in both the floor orchestrator prompt and the Slack autonomous-request protocol (`src/main/hive.ts`, `src/main/index.ts`).
+- **Orchestrator delegates opportunistically to existing agents.** Sekhon Manager now checks the live roster (active agents in `registry.json` + their state in `fleet.json`) before spawning, and prefers routing a task to an existing agent that already fits — above all when the request names one ("ask Creative Director…", "have Business Lead…") — instead of reflexively creating a new agent; he only spawns a fresh one when no existing agent is a sensible fit, and says that he checked. Encoded in both the floor orchestrator prompt and the Slack autonomous-request protocol (`src/main/hive.ts`, `src/main/index.ts`).
 - **Auto-revive wedged terminals on wake.** A terminal that wedged while the machine slept is now detected and auto-revived when the machine wakes, instead of sitting dead until manually restarted.
 - **Catch up missed schedules on wake (power keep-alive hardening).** Scheduled missions whose fire time elapsed while the machine was asleep are now caught up on wake rather than silently skipped (verified by `scripts/verify-keepalive-catchup.mjs`).
 - **Worker stale-done guard.** A worker is now released only on a `done` authored *after* it was spawned, so a stale `done` from a prior life can no longer prematurely release or tear down a live worker.
@@ -946,7 +955,7 @@ untrusted-input import pipeline.
 
 ### Added
 - **Shareable hires (#70, #71).** A portable `munder-difflin/hire@1` JSON manifest describing a role-configured agent — name, sprite, provider, model, command flags, goal, capability tags, token budget. Two import paths, one pipeline: a `munderdifflin://hire?src=<https-manifest-url>` deep link (fetched and validated in the main process, queued, then pulled by the renderer on mount) and an *import hire…* button in the Add-Agent modal that reads a local manifest file. Either way the manifest only **pre-fills** the Add-Agent modal behind an "imported" banner; spawning stays an explicit human click — import never auto-spawns. Protocol registration ships for all three platforms (macOS `open-url`, Windows/Linux single-instance lock + cold-start argv forwarding), and packaged builds register the scheme via `electron-builder.yml`.
-- **The Hiring Fair — community gallery** at [munderdiffl.in/hires](https://munderdiffl.in/hires/) (`docs/hires/`, static, no build step, served by the existing GitHub Pages setup). Seed roles drawn from the cast (Pam writes docs, Dwight enforces QA, Jim reviews PRs, Creed audits security, Angela audits the office's own token spend, Stanley does the migrations nobody wants), each with a Claude Code / Antigravity / Codex provider toggle (per-provider variants generated from one base manifest), function filters matching the landing page, and a client-side validator identical to the app's alongside a JSON schema (`docs/hires/spec/`). Model suggestions are data-driven (`docs/hires/models.json`), so new models are a one-line update.
+- **The Hiring Fair — community gallery** at [munderdiffl.in/hires](https://munderdiffl.in/hires/) (`docs/hires/`, static, no build step, served by the existing GitHub Pages setup). Seed roles drawn from the cast (Creative Director writes docs, Studio Manager enforces QA, Business Lead reviews PRs, Quality Lead audits security, Finance Lead audits the office's own token spend, Sales Lead does the migrations nobody wants), each with a Claude Code / Antigravity / Codex provider toggle (per-provider variants generated from one base manifest), function filters matching the landing page, and a client-side validator identical to the app's alongside a JSON schema (`docs/hires/spec/`). Model suggestions are data-driven (`docs/hires/models.json`), so new models are a one-line update.
 
 ### Security
 - **A hire manifest is untrusted input — defense in depth.** No auto-spawn and no executable field: `provider: "custom"` is rejected and the binary always comes from the user's local provider preset. Embedded CLI flags are gated by a **default-deny allowlist** (`SAFE_FLAG_NAMES`) — only known-harmless flags pass, nothing system-prompt/settings-related — replacing an earlier denylist that drifted as each CLI added flags. `model` is constrained to a safe charset (`MODEL_RE`), and a command-line quoter neutralizes `cmd.exe` metacharacters (`& | ^ < > ( ) % !`) on **every** spawn path — closing a Windows command-injection class (PoC `"model":"x&calc"`). The manifest fetch is https-only, manual-redirect with per-hop re-validation (kills redirect SSRF into `127.0.0.1` / `169.254.169.254`, including an IPv6-bracket bypass), streamed with a 64 KB byte cap (no trusting `content-length`), a 10s timeout, and ≤5 hops. The dependency-free validator (`src/shared/hire.ts`) is shared by the main process, the renderer, the gallery (`docs/hires/validator.js`), and the JSON schema, so all four stay in sync.
@@ -963,7 +972,7 @@ fullscreen polish.
 - **Enterprise Knowledge Graph v1 (now on by default).** A multimodal store of your own documents / policies / business context, with a CLI agents can query for ranked passages and full documents — so company-specific facts come from your data instead of guesses.
 - **Multi-window "floors" (now on by default).** Open isolated office windows, each with its own set of agents and per-PTY routing.
 - **Rich message composer — file & image attachments.** Attach files/images (via a "files" button or paste-to-attach), shown as removable chips above a taller, resizable input; you can send with attachments alone.
-- **Restore agent sessions across restart, with Restart & Continue (#78).** Agents reattach their prior Claude conversation after an app restart: Michael resumes his session (the orientation prompt is skipped on a genuine resume), and a restored worker re-enters its *existing* worktree instead of re-isolating, so uncommitted work isn't lost. The recorded session transcript is seeded into the target cwd before `--resume` attaches (and `--resume` is only used when the transcript is actually present, so there are no broken resumes against a missing id), and the pooled terminal soft-resets in place — staying live and typeable across a model change or respawn, redrawn at its real fit-derived grid. A per-agent **Restart & Continue** button respawns the session on the same model with resume to redraw a garbled terminal, and Add Agent gains a "resume session" field that reattaches by session id (auto-filling the folder, falling back to a fresh session if the id isn't found).
+- **Restore agent sessions across restart, with Restart & Continue (#78).** Agents reattach their prior Claude conversation after an app restart: Sekhon Manager resumes his session (the orientation prompt is skipped on a genuine resume), and a restored worker re-enters its *existing* worktree instead of re-isolating, so uncommitted work isn't lost. The recorded session transcript is seeded into the target cwd before `--resume` attaches (and `--resume` is only used when the transcript is actually present, so there are no broken resumes against a missing id), and the pooled terminal soft-resets in place — staying live and typeable across a model change or respawn, redrawn at its real fit-derived grid. A per-agent **Restart & Continue** button respawns the session on the same model with resume to redraw a garbled terminal, and Add Agent gains a "resume session" field that reattaches by session id (auto-filling the folder, falling back to a fresh session if the id isn't found).
 - **Drag a file onto a terminal to inject its path (#79).** Dropping a file (an image, etc.) onto an agent's terminal now writes its absolute, shell-escaped path into the session — so Claude Code detects the image path in the prompt and attaches it — instead of Electron navigating to the dropped `file://` URL. Backed by `webUtils.getPathForFile` exposed from preload (Electron 32 removed `File.path`); only file drags are intercepted, so text/selection drags still fall through to xterm.
 - **TV-show office themes — infrastructure (behind a flag, off by default).** A theme abstraction (`ThemeConfig` + registry/loader), a Settings theme picker with a destructive switch-flow, and the first themed map (Brooklyn-99 precinct). Ships dark via the `tvShowOffices` flag while the remaining maps land.
 - **Live GitHub star count** next to the Star buttons on the landing page.
@@ -1058,7 +1067,7 @@ always routes through the god.
 ### Added
 - **Live context-window gauge on each agent card.** A Claude Code statusLine pushes the session's exact token count and real context-window size after every response, so each agent card shows a precise live fuel gauge drawn from Claude Code itself instead of a transcript estimate. The gauge also zeroes the instant you send `/clear`, rather than briefly showing the previous session's full bar until the next response. (Thanks @Gulum — #12, closes #11.)
 - **Per-session terminal theme toggle + Unicode 11 emoji widths.** Each terminal session can now switch its Claude theme independently, and emoji column widths follow Unicode 11 so wide glyphs stop nudging the cursor out of alignment. (The WebGL renderer, copy/paste, and `minimumContrastRatio` from v0.2.0 are kept as-is.) (Thanks @Gulum — #26.)
-- **All human dispatch flows through the god.** Every Command Center dispatch now mails the god (`Task from the human`) instead of writing straight into a worker's inbox; the worker dropdown becomes a **suggested owner** (Michael still decides), so nothing skips the orchestrator. (Thanks @Gulum — #45, fixes #44.)
+- **All human dispatch flows through the god.** Every Command Center dispatch now mails the god (`Task from the human`) instead of writing straight into a worker's inbox; the worker dropdown becomes a **suggested owner** (Sekhon Manager still decides), so nothing skips the orchestrator. (Thanks @Gulum — #45, fixes #44.)
 - **Dedicated context-window row on the monitor tab.** The Floor monitor's cumulative budget bar was being misread as a per-agent context gauge; a separate `ctx` context-window row now sits alongside it, so the live context window and the cumulative budget aren't confused. (Thanks @Gulum — #46.)
 
 ### Fixed
@@ -1076,17 +1085,17 @@ A small follow-up to v0.2.0 that makes the scheduler considerate of agents that 
 
 ### Changed
 - **Scheduled auto-compaction is queued, not forced.** The hourly ops-standup's terminal compaction is now enqueued per agent and delivered only when that agent is idle (deduped — at most one `/compact` pending at a time), so it compacts *between* steps instead of jamming a working terminal mid-step. The standup prompt now asks each agent to summarise its current task and next step, then resume from the same point after compacting.
-- **Heartbeat is inbox-driven.** The floor heartbeat (`reengageGod`) no longer types directly into Michael's terminal; it drops its digest in his inbox, which the busy-aware inbox-wake delivers once he's idle.
+- **Heartbeat is inbox-driven.** The floor heartbeat (`reengageGod`) no longer types directly into Sekhon Manager's terminal; it drops its digest in his inbox, which the busy-aware inbox-wake delivers once he's idle.
 
 ### Docs
-- Expanded the README roadmap (chat integrations, pluggable agent CLIs, realtime Michael).
+- Expanded the README roadmap (chat integrations, pluggable agent CLIs, realtime Sekhon Manager).
 
 ## [0.2.0] — 2026-06-07
 
 The observability and control release. v0.2.0 makes the fleet visible and keeps it in check — and it's a community release in the most literal sense: most of the work below came from external contributors. Huge thanks to everyone credited.
 
 ### Added
-- **Command Center overhaul.** Michael's control surface was reworked into the place you actually run the floor from — the roster, dispatch, schedules, memory, and activity views now carry the new live signals (token budgets, telemetry, breaker state) without becoming a wall of numbers.
+- **Command Center overhaul.** Sekhon Manager's control surface was reworked into the place you actually run the floor from — the roster, dispatch, schedules, memory, and activity views now carry the new live signals (token budgets, telemetry, breaker state) without becoming a wall of numbers.
 - **Per-agent token budgets + live fleet monitoring.** Every agent carries a token budget, and the floor monitors consumption live so a single agent can't quietly run the bill up.
 - **Live OTel telemetry collector + per-model cost.** A built-in OpenTelemetry collector and a `UsageProvider` seam feed real usage in, with per-model cost attribution (interim transcript-backed stub behind the seam to start).
 - **Fleet grid + per-agent tool-span waterfall.** A live grid of the whole fleet, plus a per-agent tool-span waterfall that shows what an agent spent its turn doing — which tool calls ran, in what order, for how long.
@@ -1135,10 +1144,10 @@ Reported / requested by the community: @JLAD75 (Windows hive router / `hooks.soc
 ## [0.1.7] — 2026-06-04
 
 ### Added
-- **Slack → Michael's queue.** A new Slack integration (Settings → Slack) pipes a channel's messages straight into Michael's message queue — paste a message in Slack and it lands in his queue exactly as if you'd typed it. Off by default; every request is verified with your Slack signing secret (HMAC + 5-minute replay guard) before it's accepted, and a localtunnel exposes the local webhook for Slack's Event Subscriptions.
+- **Slack → Sekhon Manager's queue.** A new Slack integration (Settings → Slack) pipes a channel's messages straight into Sekhon Manager's message queue — paste a message in Slack and it lands in his queue exactly as if you'd typed it. Off by default; every request is verified with your Slack signing secret (HMAC + 5-minute replay guard) before it's accepted, and a localtunnel exposes the local webhook for Slack's Event Subscriptions.
 
 ### Changed
-- **Approvals are now native.** The in-app approvals queue/panel is removed in favor of native Claude Code human-in-the-loop prompts. A `to:"human"` decision now reaches you through Michael's session and native permission prompts — approvable from your phone via `/remote-control` — and Michael boots straight into running the floor.
+- **Approvals are now native.** The in-app approvals queue/panel is removed in favor of native Claude Code human-in-the-loop prompts. A `to:"human"` decision now reaches you through Sekhon Manager's session and native permission prompts — approvable from your phone via `/remote-control` — and Sekhon Manager boots straight into running the floor.
 
 ### Fixed
 - The floating approvals panel could re-queue an item when you approved it (`resolveApproval` re-routed the message back into the queue). Moving to native HITL removes the panel and the bug.
@@ -1166,12 +1175,12 @@ Reported / requested by the community: @JLAD75 (Windows hive router / `hooks.soc
 ## [0.1.5] — 2026-06-04
 
 ### Added
-- **Dwight, Michael's prep assistant.** A persistent, visible assistant agent
+- **Studio Manager, Sekhon Manager's prep assistant.** A persistent, visible assistant agent
   (Sonnet, 1M context) spawns on startup. A global **enrich** toggle routes
-  Michael's queued prompts through Dwight first — he gathers repo context and
-  rewrites the prompt, then forwards it to Michael through the hive; toggle it off
-  and prompts go straight to Michael.
-- **Michael's Command Center.** His sidebar becomes a control surface with
+  Sekhon Manager's queued prompts through Studio Manager first — he gathers repo context and
+  rewrites the prompt, then forwards it to Sekhon Manager through the hive; toggle it off
+  and prompts go straight to Sekhon Manager.
+- **Sekhon Manager's Command Center.** His sidebar becomes a control surface with
   Terminal, Floor (agent roster + **per-agent model selector** with safe restart,
   a dispatch box, and working dirs), Memory (MemPalace search + per-agent memory),
   and Activity (live log feed + board + usage proxy), plus a copyable Claude
@@ -1211,7 +1220,7 @@ Reported / requested by the community: @JLAD75 (Windows hive router / `hooks.soc
 
 ### Added
 - **Settings panel** (title-bar gear) with a **Reset & start over** action that wipes
-  Michael's memories, the entire hive (every agent, message, task, and the board), and
+  Sekhon Manager's memories, the entire hive (every agent, message, task, and the board), and
   the semantic-memory palace, then relaunches the app into onboarding.
 - Boot loader ("clocking in") shown while the GOD agent initializes, so returning users
   no longer see the empty "add agent" screen during startup.
@@ -1219,14 +1228,14 @@ Reported / requested by the community: @JLAD75 (Windows hive router / `hooks.soc
 ### Fixed
 - Crash dialog on quit caused by sending IPC to an already-destroyed window during
   teardown; all renderer sends are now destroyed-safe and shutdown steps are best-effort.
-- Michael no longer marches to the door flagged "needs you" right after finishing a turn —
+- Sekhon Manager no longer marches to the door flagged "needs you" right after finishing a turn —
   idle "waiting for input" notifications now let him linger at his desk instead of
   escalating as a blocked/needs-action state.
 
 ## [Brand & rename]
 
 ### Added
-- Brand identity: **Munder Difflin** — logo (`docs/logo.svg`), square mark
+- Brand identity: **Sekhon AI Office** — logo (`docs/logo.svg`), square mark
   (`docs/logo-mark.svg`), and hero banner (`docs/banner.svg`).
 - Landing page at `docs/index.html` (GitHub Pages–ready).
 - In-app branding: window title, boot screen, title-bar `MD` badge, and fullscreen
@@ -1235,7 +1244,7 @@ Reported / requested by the community: @JLAD75 (Windows hive router / `hooks.soc
   CI workflow.
 
 ### Changed
-- Renamed the project from *Claude Terminal Harness* to **Munder Difflin** across the
+- Renamed the project from *Claude Terminal Harness* to **Sekhon AI Office** across the
   README, docs (`SPEC.md`, `DESIGN.md`, `HIVE.md`), `package.json`, and the app UI.
 
 ## [0.1.0] — 2026

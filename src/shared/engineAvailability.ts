@@ -1,7 +1,7 @@
 /**
  * Can the engine a user is about to pick actually boot on this machine?
  *
- * The onboarding wizard records Michael's engine and nothing checks it until the
+ * The onboarding wizard records Sekhon Manager's engine and nothing checks it until the
  * first spawn. spawnAgentCore then runs the install ladder (cliInstall.ts), and
  * for a provider with no `installCommand` and no `nativeInstallCommand` that
  * ladder ends at the `manual` rung: a hint is printed in a terminal and the
@@ -39,6 +39,10 @@ export function classifyEngineAvailability(
   statuses: readonly ToolStatus[] | undefined,
   provider: AgentProvider
 ): EngineAvailability {
+  // Sekhon Local is bundled inside the Electron app and intentionally has no
+  // standalone executable on PATH. Treat it as installed before consulting the
+  // external CLI catalog.
+  if (provider === 'sekhon-local') return { state: 'installed', path: null, installCommand: '' };
   const row = statuses?.find((s) => s.id === `engine:${provider}`);
   if (!row) return { state: 'unknown', path: null, installCommand: '' };
   const installCommand = row.installCommand ?? '';
@@ -73,6 +77,6 @@ export function engineAvailabilityBadge(a: EngineAvailability): string | null {
 export function engineAvailabilityMessage(a: EngineAvailability, label: string): string | null {
   if (a.state !== 'not-installable') return null;
   return `${label} is not installed on this computer and the app has no installer for it, ` +
-    `so Michael could not start. Install it first, then press "check again". ` +
+    `so Sekhon Manager could not start. Install it first, then press "check again". ` +
     `Or pick Claude Code, which installs itself on first run.`;
 }

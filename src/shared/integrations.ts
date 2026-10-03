@@ -59,7 +59,7 @@ export interface IntegrationRecord {
   updatedAt: number;
 }
 
-/** A preset that seeds an IntegrationRecord. Dwight extends the catalog by appending
+/** A preset that seeds an IntegrationRecord. Studio Manager extends the catalog by appending
  *  to INTEGRATION_TEMPLATES — no broker or registry changes needed. */
 export interface IntegrationTemplate {
   kind: IntegrationKind;
@@ -235,7 +235,7 @@ export function resolveUpstreamUrl(baseUrl: string, pathAndQuery: string): URL |
   return resolved;
 }
 
-/** v1 reference templates — the two end-to-end references. Dwight appends more here. */
+/** v1 reference templates — the two end-to-end references. Studio Manager appends more here. */
 export const INTEGRATION_TEMPLATES: IntegrationTemplate[] = [
   {
     kind: 'github',
@@ -257,7 +257,7 @@ export const INTEGRATION_TEMPLATES: IntegrationTemplate[] = [
     idSuggestion: 'my-api'
   },
 
-  // ─── First-wave YC tools (Dwight, P2) ───────────────────────────────────────
+  // ─── First-wave YC tools (Studio Manager, P2) ───────────────────────────────────────
   // Per-tool auth model + high-value endpoint catalog: hive/docs/integration-templates.md.
   // Gmail / Google Calendar / Salesforce are intentionally NOT registered yet: they
   // authenticate via OAuth, and IntegrationAuthType has no `oauth2` (OAuth refresh is a

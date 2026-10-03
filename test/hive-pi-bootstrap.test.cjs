@@ -29,7 +29,7 @@ test('Pi fresh spawn receives exactly one positional hive bootstrap', async (t) 
   assert.equal(injection.args.length, 1, 'the bootstrap must remain one trailing positional argument');
 
   const [prompt] = injection.args;
-  assert.match(prompt, /^You are "Toby" \(toby-pi-test\),/);
+  assert.match(prompt, /^You are "People Operations" \(toby-pi-test\),/);
   assert.match(prompt, /HIVE PROTOCOL/);
   assert.ok(prompt.includes(path.join(home, 'hive', 'agents', 'toby-pi-test', 'inbox')));
   assert.ok(prompt.split('\n').length > 5, 'the multiline bootstrap must not be split into argv tokens');
@@ -53,7 +53,7 @@ test('Pi bridge setup failure does not suppress its positional bootstrap', async
 
   assert.equal(injection.env.PI_CODING_AGENT_DIR, undefined);
   assert.equal(injection.args.length, 1);
-  assert.match(injection.args[0], /^You are "Meredith" \(pi-degraded-test\),/);
+  assert.match(injection.args[0], /^You are "Supplier Relations" \(pi-degraded-test\),/);
   assert.match(injection.args[0], /HIVE PROTOCOL/);
   assert.equal(errors.length, 1);
   assert.match(String(errors[0][0]), /install hooks bridge failed/);

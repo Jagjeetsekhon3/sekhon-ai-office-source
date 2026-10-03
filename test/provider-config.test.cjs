@@ -140,6 +140,7 @@ test('model picker options stay provider-specific', () => {
     [undefined, 'auto', 'pro', 'flash', 'flash-lite']
   );
   assert.deepEqual(modelsForProvider('custom'), []);
+  assert.deepEqual(modelsForProvider('sekhon-local'), []);
 });
 
 test('Command Center model choices round-trip provider and model', () => {
@@ -177,10 +178,10 @@ test('God only sees providers that can drain hive inbox messages', () => {
   // Cursor is interactive (no -p) so it IS god-eligible.
   assert.deepEqual(
     modelProvidersForAgent(true).map((preset) => preset.id),
-    ['claude', 'codex', 'grok', 'gemini', 'antigravity', 'qwen', 'opencode', 'crush', 'pi', 'cursor']
+    ['claude', 'codex', 'grok', 'gemini', 'antigravity', 'qwen', 'opencode', 'crush', 'pi', 'cursor', 'sekhon-local']
   );
   assert.deepEqual(
     modelProvidersForAgent(false).map((preset) => preset.id),
-    ['claude', 'codex', 'grok', 'kimi', 'gemini', 'antigravity', 'qwen', 'opencode', 'crush', 'pi', 'copilot', 'cursor']
+    ['claude', 'codex', 'grok', 'kimi', 'gemini', 'antigravity', 'qwen', 'opencode', 'crush', 'pi', 'copilot', 'cursor', 'sekhon-local']
   );
 });

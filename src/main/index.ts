@@ -1,3 +1,4 @@
+import { nativeProviderAuthEnv } from './nativeProviderAuth';
 import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, powerMonitor, powerSaveBlocker, screen, shell, Notification } from 'electron';
 import { spawn } from 'node:child_process';
 import {
@@ -80,6 +81,7 @@ import {
   type AgentProvider
 } from '../shared/agentProvider';
 import { buildMissingCliScript, chooseInstallRung } from './cliInstall';
+import { SEKHON_LOCAL_AGENT_SCRIPT } from './sekhonLocalAgentScript';
 import { detectNodeVersion, nodeIsUsable, resolveNodeInstaller } from './nodeInstall';
 import { toolCatalog, type ToolStatus } from '../shared/toolCatalog';
 import { listLocalSkills, loadCatalog, installSkill, uninstallSkill, type LocalSkill } from './skills';
@@ -254,7 +256,7 @@ const telemetry = new TelemetryCollector({
   // summing every transcript in a (routinely shared) cwd.
   resolveSessionId: (agentId) => hive.lastSession(agentId)
 });
-// Usage provider (Seam 1) — the INTEGRATION swap: Oscar's telemetry collector (#7)
+// Usage provider (Seam 1) — the INTEGRATION swap: Business Analyst's telemetry collector (#7)
 // IS the provider, replacing Lane A's interim StubUsageProvider. Same
 // getAgentUsage(agentId) pull seam, so the breaker + cost ledger consumers are
 // untouched; telemetry has a transcript fallback built in, so it works before any
@@ -274,12 +276,12 @@ const breaker = new CircuitBreaker(() => {
   return { ...(c.circuitBreaker ?? {}), costCapUsd: c.costCapUsd, costCapTokens: c.costCapTokens, agentTokenCaps: c.agentTokenCaps };
 });
 // Always-on beats (decoupled from the optional heartbeat): the live fleet snapshot
-// Michael reads + the breaker beat, so guardrails + monitoring work even when the
+// Sekhon Manager reads + the breaker beat, so guardrails + monitoring work even when the
 // heartbeat mission is disabled (it ships off).
 let fleetTimer: ReturnType<typeof setInterval> | null = null;
 let breakerBeatTimer: ReturnType<typeof setInterval> | null = null;
-// Feed the breaker's api_error-storm trip from Oscar's OTel api_error spans —
-// Jim's one breaker input with no on-branch source (telemetry.onApiError seam).
+// Feed the breaker's api_error-storm trip from Business Analyst's OTel api_error spans —
+// Business Lead's one breaker input with no on-branch source (telemetry.onApiError seam).
 telemetry.onApiError((agentId) => breaker.recordError(agentId));
 // Shared roster on disk — created early so HookServer can re-read standing goals
 // on every UserPromptSubmit (Edit Agent saves land here via persistAgents).
@@ -300,8 +302,8 @@ function standingGoalFromRoster(agentId: string): string | null {
 // background window can't leave a worker parked on an unread inbox forever).
 // HookServer feeds it the hook stream so a permission/HITL prompt blocks nudges.
 const workerWake = new WorkerWakeWatchdog();
-// HookServer needs BOTH: Oscar's control registry (HITL pause/gate/steer/halt via
-// hook returns) AND Jim's breaker (feed recordToolUse on each PostToolUse).
+// HookServer needs BOTH: Business Analyst's control registry (HITL pause/gate/steer/halt via
+// hook returns) AND Business Lead's breaker (feed recordToolUse on each PostToolUse).
 const hookServer = new HookServer(
   hive,
   () => liveWebContents(),
@@ -716,7 +718,7 @@ function syncMissions(): void {
         // no dispatch body/target, so skip the hive.send and just fire auto-compact.
         // Gate on `kind!=='compact'` ALONE — that already excludes the compact mission;
         // we deliberately do NOT add `&& m.body`, so other (dispatch) missions keep
-        // their prior behaviour, including the historical empty-body send (Pam N1).
+        // their prior behaviour, including the historical empty-body send (Creative Director N1).
         if (m.kind !== 'compact' && hive.enabled()) {
           hive.send({ to: m.to, act: 'request', subject: m.label, body: m.body }, 'scheduler');
         }
@@ -895,7 +897,7 @@ function syncContextTriggers(): void {
  *  but has NO live PTY. This runs in bootstrapHiveServices, BEFORE the renderer can
  *  respawn anything, so at this point NO agent owns a PTY — every `archived:false`
  *  entry is therefore a stale carry-over from a prior session that quit/crashed
- *  WITHOUT archiving (e.g. the pre-acc13a3 'assistant' Dwight entry). Left as-is
+ *  WITHOUT archiving (e.g. the pre-acc13a3 'assistant' Studio Manager entry). Left as-is
  *  they have no live PTY, so the breaker beat steers them and the steer bounces to
  *  GOD as a requires_reply GOD can't clear → inbox flood.
  *
@@ -1205,7 +1207,7 @@ function runBreakerBeat(progressWindowMs: number): void {
     if (a.archived) continue;
     // #57/#58: skip assistant + orphaned shells. The breaker must only evaluate
     // live, real agents. An assistant entry (e.g. the pre-acc13a3 headless
-    // 'Dwight') or any orphaned entry left archived:false with NO live PTY would
+    // 'Studio Manager') or any orphaned entry left archived:false with NO live PTY would
     // otherwise be steered, and that steer bounces to GOD as a requires_reply GOD
     // can't clear → inbox flood. ptyForAgent(id) === undefined means no live PTY.
     // God is exempt from this orphan check (it keeps its own flow + the godId skip
@@ -1281,7 +1283,7 @@ function runBreakerBeat(progressWindowMs: number): void {
  *  it cannot answer "what has this agent cost us". See costLifetime.ts. */
 const costTotals = new CostLedgerTotals();
 
-/** Build + write the live fleet snapshot Michael reads (`<hive>/fleet.json`).
+/** Build + write the live fleet snapshot Sekhon Manager reads (`<hive>/fleet.json`).
  *  Always-on (independent of the heartbeat) since `claude agents` can't see the
  *  hive's sibling sessions. PII-free; never throws (called from a timer). */
 function writeFleetSnapshot(): void {
@@ -1380,7 +1382,7 @@ function liveWebContents(): Electron.WebContents | null {
   return null;
 }
 
-// ─── Slack webhook server (Slack message → Michael's queue) ──────────────────
+// ─── Slack webhook server (Slack message → Sekhon Manager's queue) ──────────────────
 /** The running Slack ingestion server, or null when disabled/stopped. */
 let slackServer: SlackWebhookServer | null = null;
 /** The loopback-only reply endpoint (lets the bundled helper post back to Slack
@@ -1402,11 +1404,11 @@ let lastSlackUrl: string | undefined;
  *  reads naturally after it. */
 function buildAutonomousRequestProtocol(channel: string, threadTs: string, helperPath: string): string {
   return `[AUTONOMOUS REQUEST PROTOCOL — this request arrived via Slack; no interactive human is watching] Handle it under this protocol:
-1. ROUTE FAST — triage and hand this to the single most-relevant agent right away. CHECK THE LIVE ROSTER FIRST (active agents in registry.json + their state in fleet.json) and prefer an EXISTING agent that fits — especially when the request names one ("ask Pam…", "have Jim…"): route to that agent and only spawn a new one if none is a sensible fit. Decompose only if it genuinely needs several. Don't sit on it.
+1. ROUTE FAST — triage and hand this to the single most-relevant agent right away. CHECK THE LIVE ROSTER FIRST (active agents in registry.json + their state in fleet.json) and prefer an EXISTING agent that fits — especially when the request names one ("ask Creative Director…", "have Business Lead…"): route to that agent and only spawn a new one if none is a sensible fit. Decompose only if it genuinely needs several. Don't sit on it.
 2. DELEGATE WITH THE REPLY HANDLE — tell that agent to do the work autonomously AND to post its result back to THIS Slack thread itself when done, using exactly: "${hive.nodeCommand()}" "${helperPath}" --channel ${channel} --thread ${threadTs} --text "<substantive result>" (that first path is the harness's bundled Node, already resolved for this machine — pass it verbatim; bare "node" is not on the hook/agent PATH on many machines.)
 3. AUTONOMOUS EXECUTION — no interactive questions. PAUSE/ask ONLY for high-severity actions: pushing to main or any remote; buying or spawning infrastructure or paid services; deleting an existing repo, file, or folder it did not create. Stay READ-ONLY at critical infrastructure and git-push-type changes unless explicitly approved.
 4. DIRECT, SUBSTANTIVE REPLY — the agent posts a real Slack-mrkdwn answer (short *bold* headline + the actual outcome/specifics/links), NEVER a bare "done"/":white_check_mark:".
-5. REPORT TO GOD — the agent then tells you (Michael) what it did.
+5. REPORT TO GOD — the agent then reports what it did to Sekhon Manager.
 6. ASYNC QUESTIONS — if a decision is genuinely needed, don't block: post the question + numbered OPTIONS to the thread via that reply command, and record {q, options, askedAt (ISO + day & time), thread_ts ${threadTs}} so the threaded human reply correlates back and resumes.
 The user's message starts now: `;
 }
@@ -1441,7 +1443,7 @@ function slackReplyScriptPath(): string {
 
 /** W3 — the bundled read-only `skills/` source dir copied into each agent's
  *  `.claude/skills/` at spawn. Same packaged/dev resolution as the helpers above.
- *  Tolerated-missing until lp-manifest (Kevin) populates it (the hive copy is a
+ *  Tolerated-missing until lp-manifest (Accountant) populates it (the hive copy is a
  *  no-op on an absent dir). */
 function skillsResourceDir(): string {
   return app.isPackaged
@@ -2238,10 +2240,10 @@ async function handleHireLink(link: string): Promise<void> {
 // exe+args form or the registration points at electron.exe with no entry.
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
-    app.setAsDefaultProtocolClient('munderdifflin', process.execPath, [resolve(process.argv[1])]);
+    app.setAsDefaultProtocolClient('sekhonaioffice', process.execPath, [resolve(process.argv[1])]);
   }
 } else {
-  app.setAsDefaultProtocolClient('munderdifflin');
+  app.setAsDefaultProtocolClient('sekhonaioffice');
 }
 
 // Deep links on Windows/Linux arrive as the argv of a SECOND process — take the
@@ -2258,7 +2260,7 @@ if (!gotInstanceLock) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
     }
-    const link = argv.find((a) => a.startsWith('munderdifflin://'));
+    const link = argv.find((a) => (a.startsWith('sekhonaioffice://') || a.startsWith('munderdifflin://')));
     if (link) void handleHireLink(link);
   });
 }
@@ -2318,7 +2320,7 @@ function createWindow(opts: { floor?: boolean } = {}): BrowserWindow {
     ...(geom && geom.x !== undefined && geom.y !== undefined ? { x: geom.x, y: geom.y } : {}),
     minWidth: MIN_WIN.width,
     minHeight: MIN_WIN.height,
-    title: isFloor ? 'Munder Difflin — Floor' : 'Munder Difflin',
+    title: isFloor ? 'Sekhon AI Office — Floor' : 'Sekhon AI Office',
     backgroundColor: '#FFF8E7',
     titleBarStyle: 'hiddenInset',
     show: false,
@@ -2354,7 +2356,7 @@ function createWindow(opts: { floor?: boolean } = {}): BrowserWindow {
   // Permission gate for the renderer (our own trusted, local content). The only
   // permission we constrain is microphone capture: it's allowed ONLY while a mic
   // feature is actually live — Free Flow dictation (`freeflowEnabled`) OR a
-  // Realtime Michael voice session (`realtimeVoiceEnabled`, flipped on by the
+  // Realtime Sekhon Manager voice session (`realtimeVoiceEnabled`, flipped on by the
   // session at start() before getUserMedia, off at stop()). With both flags off,
   // there's zero mic access even at the Electron layer. We deliberately do NOT
   // gate on OpenAI-key presence: that key (`apikey:openai`) is shared with the CLI
@@ -2648,6 +2650,37 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
   // the missing-CLI relaunch (the only re-entry, index.ts install-exit handler) does
   // NOT double-count a single user attempt — it is the SAME attempt continuing.
   if (!opts.noAutoInstall) analytics.track('agent_spawn_attempted', { provider });
+
+  // Sekhon Local is a built-in provider, not an external CLI. Materialize its
+  // small CommonJS runtime under userData and execute it with Electron's bundled
+  // Node runtime. This happens before missing-CLI detection so "sekhon-local" is
+  // never treated as a binary the user must install.
+  if (provider === 'sekhon-local') {
+    try {
+      const dir = join(app.getPath('userData'), 'sekhon-local');
+      const script = join(dir, 'agent.cjs');
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(script, SEKHON_LOCAL_AGENT_SCRIPT, 'utf8');
+      const cfg = readConfig();
+      const localBase = localOpenAiBase(cfg.providerBaseUrls?.['sekhon-local'] || 'http://localhost:11434/v1');
+      if (!localBase.ok) {
+        return { ok: false as const, error: `Sekhon Local requires a loopback model server: ${localBase.error}` };
+      }
+      const originalArgs = opts.args ?? [];
+      opts.command = process.execPath;
+      opts.args = [script, ...originalArgs];
+      opts.env = {
+        ...(opts.env ?? {}),
+        ELECTRON_RUN_AS_NODE: '1',
+        SEKHON_LOCAL_BASE_URL: localBase.url.toString().replace(/\/$/, ''),
+        SEKHON_LOCAL_AUTO: cfg.autoMode ? '1' : '0'
+      };
+    } catch (e) {
+      const error = e instanceof Error ? e.message : String(e);
+      analytics.track('agent_spawn_failed', { provider, reason: 'spawn_error' });
+      return { ok: false as const, error: `Could not prepare Sekhon Local runtime: ${error}` };
+    }
+  }
   // ── Missing engine CLI → run its installer visibly (pre-spawn) ───────────────
   // If the agent's engine binary (claude/codex/…) isn't installed, spawning it
   // just dies with "— process exited (code 1) —" and the user has no idea why.
@@ -2665,7 +2698,7 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
   // isn't archived and no worktree is torn down) before the relaunch takes over.
   {
     const bin = opts.command.trim().split(/\s+/)[0] || opts.command;
-    if (bin && !opts.noAutoInstall && !ptyManager.isCommandAvailable(bin)) {
+    if (provider !== 'sekhon-local' && bin && !opts.noAutoInstall && !ptyManager.isCommandAvailable(bin)) {
       // The installer commands are `npm install -g …`. Probe for npm the same way
       // we probe for the engine CLI, so a no-Node machine gets the node-free rung
       // (or an honest manual hint) instead of watching `npm: not found` scroll by.
@@ -2793,7 +2826,10 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
           skillsDir: skillsResourceDir(),
           // The shared palace is mutated by the agent's own `mempalace` calls, so
           // the OS sandbox must let it through (empty when memory is off).
-          extraWritableDirs: [memory.env().MEMPALACE_PALACE_PATH].filter((p): p is string => !!p)
+          extraWritableDirs: [memory.env().MEMPALACE_PALACE_PATH].filter((p): p is string => !!p),
+          // Keep Codex --add-dir in lockstep with the same global auto-mode
+          // posture that later adds "-a never -s workspace-write".
+          autoMode: readConfig().autoMode
         }
       );
       opts.args = [...(opts.args ?? []), ...inj.args];
@@ -2846,7 +2882,7 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
         : cfg.defaultModel ?? modelForRole(opts.hive, cfg);
       if (m) args.push('--model', m);
     }
-    // Name the Remote Control session after the agent (Michael, Jim, Dev1…) so it
+    // Name the Remote Control session after the agent (Sekhon Manager, Business Lead, Dev1…) so it
     // is identifiable in claude.ai / the mobile app. Otherwise Claude defaults the
     // prefix to the machine hostname (e.g. "vyapaks-macbook-pro-…"), which is
     // opaque when several agents run at once — especially with remoteControlAtStartup
@@ -2961,15 +2997,18 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
   if (Object.keys(nonInteractiveEnv).length > 0) {
     opts.env = { ...(opts.env ?? {}), ...nonInteractiveEnv };
   }
+  // Prefer the owner's stored API key when present; otherwise preserve CLI login.
+  const cloudAuthEnv = nativeProviderAuthEnv(provider, integrations.getSecret, opts.env?.GEMINI_CLI_SYSTEM_SETTINGS_PATH);
+  if (Object.keys(cloudAuthEnv).length > 0) opts.env = { ...(opts.env ?? {}), ...cloudAuthEnv };
   // ── BYOK keys + per-provider config for the non-Claude CLI engines (v0.3.1) ──
   // OpenCode / Crush / pi / qwen read BYOK API keys from standard env vars and, for
   // the local-LLM path, a per-provider base URL. Keys are write-only in the broker
   // (read MAIN-ONLY here, never logged); base URLs ride HarnessConfig. Claude/codex
-  // use their own login, so they skip this. Pam guardrails #3/#4/#5.
+  // use their own login, so they skip this. Creative Director guardrails #3/#4/#5.
   if (opts.hive && (provider === 'opencode' || provider === 'crush' || provider === 'pi' || provider === 'qwen')) {
     const cfg = readConfig();
     const extra: Record<string, string> = {};
-    // 1) BYOK keys — LEAST-PRIVILEGE (Pam/Jim NIT-2): inject ONLY the key for the
+    // 1) BYOK keys — LEAST-PRIVILEGE (Creative Director/Business Lead NIT-2): inject ONLY the key for the
     //    spawned model's provider prefix when we can identify it; fall back to all
     //    stored keys when the model/prefix is unknown (default model, qwen slugs,
     //    custom). Reduces the blast radius vs handing every CLI all keys.
@@ -2986,7 +3025,7 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
       if (!key) continue;
       extra[BACKEND_KEY_ENV[backend]] = key;
       // OpenCode/AI-SDK's Google provider reads GOOGLE_GENERATIVE_AI_API_KEY, not
-      // GEMINI_API_KEY — inject both so google/* authenticates (Jim NIT #1).
+      // GEMINI_API_KEY — inject both so google/* authenticates (Business Lead NIT #1).
       if (backend === 'google') extra.GOOGLE_GENERATIVE_AI_API_KEY = key;
     }
     // 2) Floor auto-state for pi's bundled extension auto-allow (guardrail #5): it
@@ -3002,7 +3041,7 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
         // Register the model id the user actually selects (the part after 'local/')
         // so `--model local/<id>` resolves; default to 'local'. Without this the
         // dropdown's `local/llama3` failed against a config that only declared model
-        // 'local' (Jim verify-opencode MUST-FIX #2).
+        // 'local' (Business Lead verify-opencode MUST-FIX #2).
         const localModel = (prefix === 'local' && modelSlug.slice(6)) || 'local';
         oc.provider = {
           local: { npm: '@ai-sdk/openai-compatible', name: 'Local (self-hosted)', options: { baseURL: baseUrl }, models: { [localModel]: { name: localModel } } }
@@ -3132,7 +3171,7 @@ ipcMain.handle('terminal:openAtFolder', async (_evt, cwd: unknown) => {
   });
 });
 
-// ─── IPC: integrations (Phase 2 registry — backend for Ryan's Settings UI) ────
+// ─── IPC: integrations (Phase 2 registry — backend for Research Assistant's Settings UI) ────
 // Records are metadata only (config-backed); secrets are encrypted at rest and NEVER
 // returned over IPC. `list` redacts secretRef to a `hasSecret` boolean.
 ipcMain.handle('integrations:list', () => integrations.listRecordsRedacted());
@@ -3149,6 +3188,135 @@ ipcMain.handle('integrations:remove', (_evt, payload: unknown) => {
   if (typeof p.id !== 'string' || !p.id) return { ok: false, error: 'id required' };
   return integrations.removeRecord(p.id);
 });
+// ─── IPC: local model manager (Ollama, loopback-only) ────────────────────────
+// Model management is deliberately HTTP-only: never interpolate a model name into
+// a shell command. The endpoint must resolve to loopback, so this UI cannot be
+// turned into an arbitrary-network fetch surface.
+function localOllamaRoot(raw: unknown): { ok: true; url: URL } | { ok: false; error: string } {
+  if (typeof raw !== 'string' || !raw.trim()) return { ok: false, error: 'Ollama URL required' };
+  let u: URL;
+  try { u = new URL(raw.trim()); } catch { return { ok: false, error: 'invalid Ollama URL' }; }
+  const host = u.hostname.toLowerCase();
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return { ok: false, error: 'Ollama URL must use http or https' };
+  if (host !== 'localhost' && host !== '127.0.0.1' && host !== '::1' && host !== '[::1]') {
+    return { ok: false, error: 'local model manager only connects to this computer' };
+  }
+  u.pathname = u.pathname.replace(/\/v1\/?$/, '').replace(/\/$/, '');
+  u.search = '';
+  u.hash = '';
+  return { ok: true, url: u };
+}
+function ollamaUrl(root: URL, path: string): string {
+  return root.toString().replace(/\/$/, '') + path;
+}
+
+ipcMain.handle('localModels:ollamaList', async (_evt, rawUrl: unknown) => {
+  const root = localOllamaRoot(rawUrl);
+  if (!root.ok) return root;
+  try {
+    const res = await fetch(ollamaUrl(root.url, '/api/tags'), { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return { ok: false, error: `Ollama returned HTTP ${res.status}` };
+    const data = await res.json() as { models?: Array<{ name?: unknown; size?: unknown; modified_at?: unknown }> };
+    const models = Array.isArray(data.models) ? data.models
+      .filter((m) => typeof m?.name === 'string')
+      .map((m) => ({
+        name: String(m.name),
+        size: typeof m.size === 'number' ? m.size : undefined,
+        modifiedAt: typeof m.modified_at === 'string' ? m.modified_at : undefined
+      })) : [];
+    return { ok: true, models };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+});
+
+ipcMain.handle('localModels:ollamaPull', async (_evt, payload: unknown) => {
+  const p = (payload ?? {}) as { baseUrl?: unknown; model?: unknown };
+  const root = localOllamaRoot(p.baseUrl);
+  if (!root.ok) return root;
+  const model = typeof p.model === 'string' ? p.model.trim() : '';
+  if (!model || model.length > 160 || !/^[A-Za-z0-9._:\/-]+$/.test(model)) {
+    return { ok: false, error: 'invalid model name' };
+  }
+  try {
+    const res = await fetch(ollamaUrl(root.url, '/api/pull'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model, stream: false }),
+      signal: AbortSignal.timeout(30 * 60 * 1000)
+    });
+    if (!res.ok) return { ok: false, error: `Ollama returned HTTP ${res.status}` };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+});
+
+// Delete an installed Ollama model. Same loopback + model-name guards as pull.
+ipcMain.handle('localModels:ollamaDelete', async (_evt, payload: unknown) => {
+  const p = (payload ?? {}) as { baseUrl?: unknown; model?: unknown };
+  const root = localOllamaRoot(p.baseUrl);
+  if (!root.ok) return root;
+  const model = typeof p.model === 'string' ? p.model.trim() : '';
+  if (!model || model.length > 160 || !/^[A-Za-z0-9._:\/-]+$/.test(model)) {
+    return { ok: false, error: 'invalid model name' };
+  }
+  try {
+    const res = await fetch(ollamaUrl(root.url, '/api/delete'), {
+      method: 'DELETE',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model }),
+      signal: AbortSignal.timeout(30_000)
+    });
+    if (!res.ok) return { ok: false, error: `Ollama returned HTTP ${res.status}` };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+});
+
+/** Normalize a LOCAL OpenAI-compatible endpoint (LM Studio, vLLM, llama.cpp,
+ *  LocalAI, Ollama's /v1 facade). This settings surface is intentionally
+ *  loopback-only; remote/self-hosted URLs remain possible through the existing
+ *  per-engine advanced base-URL fields, but are not probed by this manager. */
+function localOpenAiBase(raw: unknown): { ok: true; url: URL } | { ok: false; error: string } {
+  if (typeof raw !== 'string' || !raw.trim()) return { ok: false, error: 'local server URL required' };
+  let u: URL;
+  try { u = new URL(raw.trim()); } catch { return { ok: false, error: 'invalid local server URL' }; }
+  const host = u.hostname.toLowerCase();
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return { ok: false, error: 'URL must use http or https' };
+  if (host !== 'localhost' && host !== '127.0.0.1' && host !== '::1' && host !== '[::1]') {
+    return { ok: false, error: 'local AI manager only connects to this computer' };
+  }
+  u.search = '';
+  u.hash = '';
+  u.pathname = u.pathname.replace(/\/$/, '');
+  if (!u.pathname.endsWith('/v1')) u.pathname = (u.pathname || '') + '/v1';
+  return { ok: true, url: u };
+}
+function localOpenAiUrl(base: URL, path: string): string {
+  return base.toString().replace(/\/$/, '') + path;
+}
+
+ipcMain.handle('localModels:openAiList', async (_evt, rawUrl: unknown) => {
+  const base = localOpenAiBase(rawUrl);
+  if (!base.ok) return base;
+  try {
+    const res = await fetch(localOpenAiUrl(base.url, '/models'), { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return { ok: false, error: `Local server returned HTTP ${res.status}` };
+    const data = await res.json() as { data?: Array<{ id?: unknown; owned_by?: unknown }> };
+    const models = Array.isArray(data.data)
+      ? data.data.filter((m) => typeof m?.id === 'string').map((m) => ({
+          id: String(m.id),
+          ownedBy: typeof m.owned_by === 'string' ? m.owned_by : undefined
+        }))
+      : [];
+    return { ok: true, baseUrl: base.url.toString().replace(/\/$/, ''), models };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+});
+
 // ─── IPC: per-CLI-provider BYOK keys (write-only) ────────────────────────────
 // API keys for the backend model-providers the non-Claude CLIs use are stored
 // WRITE-ONLY under `apikey:<backend>` in the same encrypted broker. The renderer
@@ -3770,6 +3938,39 @@ ipcMain.handle('history:list', (_evt, agentId: unknown, limit: unknown) =>
 ipcMain.handle('history:search', (_evt, query: unknown, limit: unknown) =>
   persist.searchHistory(typeof query === 'string' ? query : '', typeof limit === 'number' ? limit : undefined));
 
+// ─── IPC: Agency leads (SQLite) ──────────────────────────────────────────────
+ipcMain.handle('leads:list', () => persist.listLeads());
+ipcMain.handle('leads:add', (_evt, payload: unknown) => {
+  const p = (payload ?? {}) as Record<string, unknown>;
+  if (typeof p.title !== 'string' || !p.title.trim()) return { ok: false, error: 'title required' };
+  try {
+    const lead = persist.addLead({
+      title: p.title,
+      client: typeof p.client === 'string' ? p.client : null,
+      source: typeof p.source === 'string' ? p.source : null,
+      sourceUrl: typeof p.sourceUrl === 'string' ? p.sourceUrl : null,
+      budget: typeof p.budget === 'string' ? p.budget : null,
+      deadline: typeof p.deadline === 'string' ? p.deadline : null,
+      fit: typeof p.fit === 'string' ? p.fit : null,
+      notes: typeof p.notes === 'string' ? p.notes : null,
+      status: 'new'
+    });
+    return lead ? { ok: true, lead } : { ok: false, error: 'could not save lead' };
+  } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
+});
+ipcMain.handle('leads:update', (_evt, id: unknown, patch: unknown) => {
+  if (typeof id !== 'number' || !patch || typeof patch !== 'object') return { ok: false, error: 'invalid args' };
+  try {
+    const lead = persist.updateLead(id, patch as never);
+    return lead ? { ok: true, lead } : { ok: false, error: 'lead not found or invalid' };
+  } catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
+});
+ipcMain.handle('leads:delete', (_evt, id: unknown) => {
+  if (typeof id !== 'number') return { ok: false, error: 'invalid id' };
+  try { return { ok: persist.deleteLead(id) }; }
+  catch (e) { return { ok: false, error: e instanceof Error ? e.message : String(e) }; }
+});
+
 // ─── IPC: quit confirmation ─────────────────────────────────────────────────
 /** Tear the harness down and quit. Shared by the hard "kill all & quit" path
  *  and the closing-time conclusion (after the god confirmed the floor saved). */
@@ -3852,7 +4053,7 @@ ipcMain.handle('app:resetAll', () => {
   try { persist.close(); } catch (e) { console.error('[reset] persist.close:', e); }
   try { ptyManager.killAll(); } catch (e) { console.error('[reset] killAll:', e); }
   try { hive.removeExposedCodexData(); } catch (e) { console.error('[reset] removeExposedCodexData:', e); }
-  // Erase the hive (Michael's + every agent's memory, inboxes, tasks, board,
+  // Erase the hive (Sekhon Manager's + every agent's memory, inboxes, tasks, board,
   // git history) and the semantic-memory palace. Only these harness-created
   // subdirs are removed — never the user's whole harnessHome folder.
   for (const dir of [hive.root(), memory.palacePath()]) {
@@ -3891,12 +4092,12 @@ ipcMain.handle('hive:agentContext', (_evt, agentId: unknown) => {
 });
 
 // A consolidated, NON-SENSITIVE per-agent directory for the voice read-layer
-// (Realtime Michael's get_agent_detail / list_agents). One read that joins
+// (Realtime Sekhon Manager's get_agent_detail / list_agents). One read that joins
 // everything the office-floor sidebar + telemetry know per agent: the registry
 // record (name/role/provider/cwd/status/archived/isGod/isAssistant/sessionId/
 // cwdValid), live token + breaker + last-tool telemetry, and the current context
 // window fill. Includes ARCHIVED agents (unlike the heartbeat's fleet.json, which
-// is live-only) so Michael can speak to inactive agents — their cwd and memory
+// is live-only) so Sekhon Manager can speak to inactive agents — their cwd and memory
 // stay reachable. PII-free: no secrets, env, or API keys ever leave main; cost is
 // carried as tokens (+ a usd field the voice layer deliberately never speaks).
 ipcMain.handle('hive:agentDirectory', () => {
@@ -3951,7 +4152,7 @@ ipcMain.handle('telemetry:snapshot', () => telemetry.snapshot());
 // Lane A's breaker calls this with a BreakerState; we fan it out to the renderer
 // on `control:breakerState`, where the avatar adapter gives it precedence over
 // hook-derived status (#5C looping/zombie). Defined here so the channel exists
-// before Jim's policy lands; he produces, this lane consumes.
+// before Business Lead's policy lands; he produces, this lane consumes.
 ipcMain.handle('control:setBreakerState', (_evt, state: unknown) => {
   try { liveWebContents()?.send('control:breakerState', state); } catch { /* window tore down */ }
   return { ok: true };
@@ -4427,23 +4628,23 @@ ipcMain.handle('freeflow:transcribe', async (_evt, arg: unknown) => {
   return out;
 });
 
-// ─── IPC: Realtime Michael (voice orchestrator — ephemeral token mint, rt-1) ──
+// ─── IPC: Realtime Sekhon Manager (voice orchestrator — ephemeral token mint, rt-1) ──
 // MAIN owns the BYOK OpenAI key (encrypted broker, apikey:openai) and mints a
 // short-lived EPHEMERAL client secret; the real key never crosses IPC. All wiring
 // lives in ./realtime so this stays a single registration line.
 registerRealtimeIpc();
 
-// ─── IPC: Realtime Michael voice ACTIONS (rt-5, Phase 2) ─────────────────────
+// ─── IPC: Realtime Sekhon Manager voice ACTIONS (rt-5, Phase 2) ─────────────────────
 // Thin adapters over the SAME main fns the god PTY already uses. ALL of the safety
 // spine — soft-vs-destructive tiering, the two-step verbal echo-back confirm, the
 // distinct-token rule, the hard allowlist (kill-god / mass-ops forbidden), and the
 // michael-voice attribution — lives in ./realtimeActions. This site only injects
 // the existing functions; it adds NO new orchestration logic.
-// ─── IPC: Realtime Michael completion watcher (rt-12, Phase 2) ───────────────
-// Jim's net-new engine (realtimeCompletionWatcher.ts) detects a voice-dispatched
+// ─── IPC: Realtime Sekhon Manager completion watcher (rt-12, Phase 2) ───────────────
+// Business Lead's net-new engine (realtimeCompletionWatcher.ts) detects a voice-dispatched
 // task finishing (card→done OR a done-reply in michael-voice's inbox) and EMITS it;
 // I own the seam — inject the hive read deps, push completions to the live session
-// (so Michael speaks them unprompted), and bridge waitFor / queue-drain over IPC.
+// (so Sekhon Manager speaks them unprompted), and bridge waitFor / queue-drain over IPC.
 const completionWatcher = initCompletionWatcher({
   readTasks: () => { const t = hive.tasks() as { tasks?: TaskCard[] }; return Array.isArray(t?.tasks) ? t.tasks : []; },
   // Voice dispatches go out as from:michael-voice, so assignee done-replies land here.
@@ -5271,7 +5472,7 @@ function runWorkerWakeBeat(): void {
 }
 
 /** (Re)arm the always-on beats (decoupled from the optional heartbeat): the live
- *  fleet snapshot Michael reads (~8s) + the breaker/cost-ledger beat (~30s).
+ *  fleet snapshot Sekhon Manager reads (~8s) + the breaker/cost-ledger beat (~30s).
  *  Guarded (clear-then-set) so a re-bootstrap (changeHome recovery) OR a
  *  powerMonitor resume can't stack duplicate timers — these are setInterval
  *  handles that freeze during true system sleep and must be re-armed on wake. */
@@ -5373,7 +5574,7 @@ function onSystemResume(reason: string): void {
 }
 
 app.whenReady().then(() => {
-  // Realtime Michael mic-gate hygiene (rt-8 / Pam rt-10 nit): the voice session
+  // Realtime Sekhon Manager mic-gate hygiene (rt-8 / Creative Director rt-10 nit): the voice session
   // opens the mic permission gate by persisting realtimeVoiceEnabled=true and
   // closes it on disconnect — but a hard crash/reload mid-session skips that
   // teardown, leaving the flag stuck true so the gate would boot PRE-OPEN with no
@@ -5397,7 +5598,7 @@ app.whenReady().then(() => {
   void loadModelCatalog(MODEL_CATALOG_CACHE()).catch(() => { /* never fatal */ });
 
   // A cold-start deep link (Windows/Linux) rides in on OUR argv.
-  const startupHireLink = process.argv.find((a) => a.startsWith('munderdifflin://'));
+  const startupHireLink = process.argv.find((a) => (a.startsWith('sekhonaioffice://') || a.startsWith('munderdifflin://')));
   if (startupHireLink) void handleHireLink(startupHireLink);
 
   // Hand every spawned agent the path to the Slack reply discovery file via the

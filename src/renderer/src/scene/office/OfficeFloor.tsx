@@ -288,6 +288,71 @@ export function OfficeFloor() {
       const mapRenderer = new TiledMapRenderer(resolveThemeMap(theme), tilesetTextures);
       world.addChild(mapRenderer.getContainer());
       const charLayer = mapRenderer.getCharacterContainer();
+
+      // ─── Sekhon AI Office visual layer ─────────────────────────────────────
+      // Keep the proven Tiled geometry/collision map intact and brand the scene
+      // procedurally. This changes the look without touching pathfinding, desks,
+      // spawn points or interactive anchors, so visual iteration cannot strand
+      // agents or break the office simulation.
+      const brand = new Graphics();
+      brand.eventMode = 'none';
+      brand.zIndex = 1;
+      const bts = mapRenderer.tileSize;
+
+      // CEO / orchestrator office: cool glass-tech wash + teal threshold.
+      brand
+        .rect(1 * bts, 3 * bts, 7 * bts, 5 * bts)
+        .fill({ color: 0x12333a, alpha: 0.12 });
+      brand
+        .rect(1 * bts, 7 * bts + 13, 7 * bts, 3)
+        .fill({ color: 0x61d6c5, alpha: 0.9 });
+
+      // Main work floor: subtle cyan spine to visually connect the agent desks.
+      brand
+        .rect(1 * bts, 11 * bts + 6, 22 * bts, 2)
+        .fill({ color: 0x61d6c5, alpha: 0.35 });
+      brand
+        .rect(1 * bts, 16 * bts + 6, 22 * bts, 2)
+        .fill({ color: 0x61d6c5, alpha: 0.22 });
+
+      // Boardroom / planning zone accent.
+      brand
+        .rect(9 * bts, 3 * bts, 9 * bts, 5 * bts)
+        .fill({ color: 0x6f7dff, alpha: 0.07 });
+      brand
+        .rect(9 * bts, 3 * bts, 9 * bts, 2)
+        .fill({ color: 0x8792ff, alpha: 0.85 });
+
+      // Café / recharge zone accent.
+      brand
+        .rect(24 * bts, 12 * bts, 8 * bts, 8 * bts)
+        .fill({ color: 0x50c49c, alpha: 0.07 });
+      brand
+        .rect(24 * bts, 12 * bts, 2, 8 * bts)
+        .fill({ color: 0x61d6c5, alpha: 0.7 });
+
+      // Entrance welcome mat + a tiny pixel "SA" monogram. Drawn in code so it
+      // is original, resolution-independent and carries no third-party asset.
+      const ex = 14 * bts + 4;
+      const ey = 19 * bts + 4;
+      brand.rect(ex, ey, 60, 12).fill({ color: 0x13272d, alpha: 0.92 });
+      brand.rect(ex, ey, 60, 2).fill(0x61d6c5);
+      brand.rect(ex + 5, ey + 4, 10, 2).fill(0xf4fbfa);
+      brand.rect(ex + 5, ey + 4, 2, 4).fill(0xf4fbfa);
+      brand.rect(ex + 5, ey + 8, 10, 2).fill(0xf4fbfa);
+      brand.rect(ex + 13, ey + 6, 2, 4).fill(0xf4fbfa);
+      brand.rect(ex + 20, ey + 4, 2, 6).fill(0x61d6c5);
+      brand.rect(ex + 28, ey + 4, 2, 6).fill(0x61d6c5);
+      brand.rect(ex + 22, ey + 4, 6, 2).fill(0x61d6c5);
+      brand.rect(ex + 22, ey + 6, 6, 2).fill(0x61d6c5);
+
+      // Small data-light markers around the work floor give the room a more
+      // modern AI-lab identity while staying clear of desks and click targets.
+      for (const [x, y] of [[8, 10], [14, 10], [20, 10], [8, 15], [14, 15], [20, 15]] as const) {
+        brand.circle(x * bts + 8, y * bts + 8, 1.5).fill({ color: 0x7df3df, alpha: 0.9 });
+      }
+
+      charLayer.addChild(brand);
       const tileCount = mapRenderer.getContainer().children.reduce(
         (n, c) => n + ((c as Container).children?.length ?? 0), 0);
       console.log(`[OfficeFloor] map ${mapRenderer.width}x${mapRenderer.height}, ${tileCount} tile sprites rendered`);
@@ -299,7 +364,7 @@ export function OfficeFloor() {
 
       // ─── The boss's wall calendar → TRIGGERS ───────────────────────────────
       // A little tear-off month page hangs on the CEO office wall. Clicking it
-      // selects Michael (the god) and opens the Command Center's TRIGGERS tab —
+      // selects Sekhon Manager (the god) and opens the Command Center's TRIGGERS tab —
       // everything that wakes the hive without you, schedules first among them.
       const calTs = mapRenderer.tileSize;
       const calG = new Graphics();
@@ -375,7 +440,7 @@ export function OfficeFloor() {
       }
       if (waitTiles.length === 0) waitTiles.push(entrance);
 
-      // Seat 0 is desk-ceo — "Michael's room" — reserved for the god agent.
+      // Seat 0 is desk-ceo — "Sekhon Manager's room" — reserved for the god agent.
       // All other workers claim seats from 1 onward.
       const GOD_SEAT = 0;
       const claimSeat = (agent: Agent): number | null => {
@@ -893,7 +958,7 @@ export function OfficeFloor() {
         if (free.length === 0) return;
         const idx = free[Math.floor(Math.random() * free.length)];
         const spot = ERRAND_SPOTS[idx];
-        // Pick the performer. The CEO office's spots belong to Michael alone —
+        // Pick the performer. The CEO office's spots belong to Sekhon Manager alone —
         // and unlike workers he runs his errands FROM his desk (he's seated
         // while idle, so the sitting check doesn't apply to him).
         let agent: Agent | undefined;
@@ -936,10 +1001,10 @@ export function OfficeFloor() {
         });
       };
 
-      // ─── The boss aura: performative excellence in Michael's presence ──────
+      // ─── The boss aura: performative excellence in Sekhon Manager's presence ──────
       // When the god's avatar wanders close to a worker, the worker bursts
       // into suck-up mode — including REAL stats ("already shipped N tasks,
-      // Michael. raise?" with N from the actual ledger). What they say once
+      // Sekhon Manager. raise?" with N from the actual ledger). What they say once
       // he's out of earshot is a different story (see emitQuip's gossip).
       const lastSuckUp = new Map<string, number>();
       let doneByAssignee = new Map<string, number>();
@@ -1020,7 +1085,7 @@ export function OfficeFloor() {
       // assignee) literally TAKES THE NOTE ALONG: it leaves the boards and
       // sticks to that worker's desk instead. Finished tasks archive as a green
       // stack on the little table at the end. Clicking any of it selects
-      // Michael and opens the Command Center's tasks tab.
+      // Sekhon Manager and opens the Command Center's tasks tab.
       const BOARD_TILE: Tile = theme.anchors.boards;
       // The ensemble (two boards + archive table) is 82px wide; the wall run
       // between the two doorways spans tiles 6..12 (112px) — center it.
@@ -1115,7 +1180,7 @@ export function OfficeFloor() {
       drawTaskBoard([]);
 
       // ─── The office clock: clicking it is CLOCKING OUT ─────────────────────
-      // The wall clock beside Michael's window doubles as the quit entry:
+      // The wall clock beside Sekhon Manager's window doubles as the quit entry:
       // a click runs the real close flow (window.close() → the main process
       // intercepts while agents run → the "Quitting now?" dialog with its
       // closing-time option). The office clock literally opens quitting time.
@@ -1179,7 +1244,7 @@ export function OfficeFloor() {
       drawAskBoard(0);
 
       // ─── Board choreography: every ledger move is ACTED on the floor ───────
-      // Michael walks over and pins fresh cards; an assigned worker walks to
+      // Sekhon Manager walks over and pins fresh cards; an assigned worker walks to
       // the TODO board, takes its note and carries it home; finishing carries
       // the note to the archive table; a card going blocked gets walked to the
       // red board. While a move is in flight, the boards keep showing the OLD

@@ -34,6 +34,7 @@ export type AgentProvider =
   | 'pi'
   | 'copilot'
   | 'cursor'
+  | 'sekhon-local'
   | 'custom';
 
 /** Structured descriptor for how a NON-hiveAware provider gets hive lifecycle
@@ -52,6 +53,7 @@ export type AgentProvider =
  *               handoff today; 'serve' reserved for a future HTTP push path). */
 export type BridgeDescriptor =
   | { kind: 'hooks'; shim: 'agy' | 'codex' | 'pi' | 'opencode' | 'grok' | 'gemini' }
+  | { kind: 'native' }
   | {
       kind: 'proxy';
       api: 'openai' | 'anthropic';
@@ -105,8 +107,8 @@ export interface AgentProviderPreset {
    *  derives `{kind:'hooks'}` from their `hookBridge`. claude/custom leave it
    *  undefined (no bridge). Prefer `bridgeOf(provider)` over reading this directly. */
   bridge?: BridgeDescriptor;
-  /** The model the GOD orchestrator ("Michael") defaults to when this provider
-   *  powers it — surfaced as the picker default and the advisory "give Michael a
+  /** The model the GOD orchestrator ("Sekhon Manager") defaults to when this provider
+   *  powers it — surfaced as the picker default and the advisory "give Sekhon Manager a
    *  longer-context, higher-capability model". `modelForRole` resolves the GOD
    *  model as `config.godModel ?? preset.recommendedOrchestratorModel ?? MODEL_GOD`.
    *  Advisory + user-overridable. */
@@ -179,7 +181,7 @@ export const AGENT_PROVIDER_PRESETS: AgentProviderPreset[] = [
     autoFlag: '--permission-mode bypassPermissions',
     hiveAware: true,
     canReceiveInbox: true,
-    // Longest-context Claude variant — matches the "give Michael a bigger model"
+    // Longest-context Claude variant — matches the "give Sekhon Manager a bigger model"
     // advisory and the Recommended tag on the orchestrator picker.
     recommendedOrchestratorModel: 'claude-opus-4-8[1m]',
     resumeFlag: '--resume',
@@ -271,14 +273,14 @@ export const AGENT_PROVIDER_PRESETS: AgentProviderPreset[] = [
     defaultCommand: 'kimi',
     commandGroups: [],
     // Kimi --auto handles every approval and does not stop to ask questions,
-    // matching Munder Difflin's autonomous Claude/Codex default.
+    // matching Sekhon AI Office's autonomous Claude/Codex default.
     autoModeFlag: '--auto',
     autoFlag: '--auto',
     supportsModel: true,
     modelFlag: '--model',
     hiveAware: false,
     // Kimi's interactive TUI has no positional initial-prompt form. It supports
-    // lifecycle hooks, but Munder Difflin does not yet install a Kimi hook bridge,
+    // lifecycle hooks, but Sekhon AI Office does not yet install a Kimi hook bridge,
     // so mail must bounce rather than being delivered with no drain path.
     canReceiveInbox: false
   },
@@ -355,7 +357,7 @@ export const AGENT_PROVIDER_PRESETS: AgentProviderPreset[] = [
     commandGroups: [],
     // OpenCode's TUI exposes no skip-permissions FLAG; headless auto-approve is a
     // config concern (permission:allow). To keep auto-mode gated behind the floor
-    // `config.autoMode` toggle (Pam guardrail #2), the permission JSON is NOT a
+    // `config.autoMode` toggle (Creative Director guardrail #2), the permission JSON is NOT a
     // static nonInteractiveEnv — spawnAgentCore builds OPENCODE_CONFIG_CONTENT
     // dynamically (permission:allow only when autoMode is on; + a local provider
     // block when a base-URL is set). So no auto flag is spliced onto the command.
@@ -441,7 +443,7 @@ export const AGENT_PROVIDER_PRESETS: AgentProviderPreset[] = [
     bridge: { kind: 'proxy', api: 'openai', baseUrlEnv: 'CRUSH_PROXY_BASE_URL', inboxDelivery: 'terminal' },
     // OpenAI-WIRE default so the out-of-box Crush god routes through the proxy
     // cleanly (the proxy serves one wire-shape; an anthropic/* default would route to
-    // the wrong upstream — Dwight verify-crush MF1). Advisory/editable; non-OpenAI-wire
+    // the wrong upstream — Studio Manager verify-crush MF1). Advisory/editable; non-OpenAI-wire
     // Crush-via-proxy is on-device live-verify. // exact long-context id humanQA
     recommendedOrchestratorModel: 'openai/gpt-4o',
     // god-eligible via the proxy bridge (terminal inbox delivery on synthesized idle).
@@ -472,7 +474,7 @@ export const AGENT_PROVIDER_PRESETS: AgentProviderPreset[] = [
     // pi has NO yolo flag. `--approve` is per-run PROJECT trust (accept the cwd so pi
     // doesn't prompt to trust the folder); the actual tool auto-allow lives INSIDE the
     // bridge extension's tool_call handler, which respects the floor auto-state via
-    // HIVE_AUTO_APPROVE env (Pam guardrail #5). Gated by config.autoMode like the rest.
+    // HIVE_AUTO_APPROVE env (Creative Director guardrail #5). Gated by config.autoMode like the rest.
     autoModeFlag: '--approve',
     autoFlag: '--approve',
     // Suppress first-run version-check / telemetry chatter in the PTY. // humanQA exact names
@@ -534,7 +536,7 @@ export const AGENT_PROVIDER_PRESETS: AgentProviderPreset[] = [
     // TUI by default (no `-p`), so the session stays alive for hive mail via the
     // renderer idle / work-order path — same class as Crush. Print mode (`-p`) is
     // available for scripts but exits per turn; this preset intentionally does
-    // NOT use `-p` so Michael and workers remain god-eligible / inbox-capable.
+    // NOT use `-p` so Sekhon Manager and workers remain god-eligible / inbox-capable.
     // Models (including cheap gpt-5.6-luna-*) bill against Cursor credits via the
     // logged-in CLI — there is no separate "plain OpenAI API" path for Luna.
     id: 'cursor',
@@ -568,6 +570,26 @@ export const AGENT_PROVIDER_PRESETS: AgentProviderPreset[] = [
     docsUrl: 'https://cursor.com/docs/cli/install'
   },
   {
+    // Sekhon Local is bundled with the app: no third-party agent CLI is required.
+    // Main swaps this sentinel command for Electron's own Node runtime + the bundled
+    // local-agent script before PTY spawn. The script talks directly to a loopback
+    // OpenAI-compatible server (Ollama / LM Studio / vLLM / llama.cpp / LocalAI).
+    id: 'sekhon-local',
+    label: 'Sekhon Local',
+    defaultCommand: 'sekhon-local',
+    commandGroups: [],
+    autoModeFlag: '',
+    autoFlag: '',
+    supportsModel: true,
+    modelFlag: '--model',
+    hiveAware: false,
+    bridge: { kind: 'native' },
+    canReceiveInbox: true,
+    initialPromptFlag: '--system',
+    recommendedOrchestratorModel: undefined,
+    resumeFlag: undefined
+  },
+  {
     id: 'custom',
     label: 'Custom',
     defaultCommand: '',
@@ -594,6 +616,7 @@ export function isAgentProvider(value: unknown): value is AgentProvider {
     value === 'pi' ||
     value === 'copilot' ||
     value === 'cursor' ||
+    value === 'sekhon-local' ||
     value === 'custom'
   );
 }
@@ -646,6 +669,7 @@ export function inferAgentProvider(command: string | undefined, explicit?: unkno
   if (bin === 'pi') return 'pi';
   if (bin === 'copilot') return 'copilot';
   // Cursor ships as `cursor-agent`; `agent` is a shorter alias (generic name — check last).
+  if (bin === 'sekhon-local') return 'sekhon-local';
   if (bin === 'cursor-agent') return 'cursor';
   if (bin === 'agent') return 'cursor';
   if (bin === 'claude' || !bin) return 'claude';

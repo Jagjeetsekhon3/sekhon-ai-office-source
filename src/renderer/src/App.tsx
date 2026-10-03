@@ -13,6 +13,7 @@ import { MemoryPanel } from '@/components/MemoryPanel';
 import { AgentDetailPanel } from '@/components/AgentDetailPanel';
 import { AgentStrip } from '@/components/AgentStrip';
 import { AddAgentModal } from '@/components/AddAgentModal';
+import { LeadsBoardModal } from '@/components/LeadsBoardModal';
 import { MichaelBooting } from '@/components/MichaelBooting';
 import { OnboardingWizard } from '@/components/OnboardingWizard';
 import { HivePicker } from '@/components/HivePicker';
@@ -31,12 +32,14 @@ import { FullscreenTerminal } from '@/components/FullscreenTerminal';
 import { TaskDetailOverlay } from '@/components/TaskDetailOverlay';
 import { IdePanel } from '@/ide/IdePanel';
 import { useHoldOptionToTalk } from '@/freeflow/holdOption';
-import brandLogo from '@brand/logo.png?url';
 
 // Injected at build time from package.json (see electron.vite.config.ts).
 declare const __APP_VERSION__: string;
 
 export function App() {
+  const businessWorkspace = useStore(s => s.businessWorkspace);
+  const chooseBusinessWorkspace = useStore(s => s.setBusinessWorkspace);
+
   // Point every {{godName}} string at the orchestrator's real, renameable name.
   useGodNameSync();
   // Mirror the document only for a user who has picked an RTL app language.
@@ -73,6 +76,7 @@ export function App() {
     return false;
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [leadsOpen, setLeadsOpen] = useState(false);
   /** Which tab Settings opens on. Set by a `cth:open-settings` deep link, reset
    *  to undefined (→ General) whenever the modal is opened the normal way. */
   const [settingsSection, setSettingsSection] = useState<SettingsSection | undefined>(undefined);
@@ -123,7 +127,7 @@ export function App() {
       useStore.getState().setOrgTrigger(withTriggers.orgTrigger ?? DEFAULT_ORG_TRIGGER);
     });
     // Mirror BYOK OpenAI key presence (boolean only; the key never leaves main) so the
-    // Realtime Michael voice toggle can gate on it. Lives in the secret broker, not
+    // Realtime Sekhon Manager voice toggle can gate on it. Lives in the secret broker, not
     // config — so fetch it rather than derive from c.
     window.cth.realtimeHasOpenAiKey().then(has => {
       if (!cancelled) useStore.getState().setHasOpenAiKey(has);
@@ -189,7 +193,7 @@ export function App() {
 
   // The hive: god-agent bootstrap, hook-driven avatars, idle-agent waking. Held
   // off until the user opens a hive in the launch picker (passing null no-ops the
-  // hook) so Michael doesn't boot against the current home while the user may be
+  // hook) so Sekhon Manager doesn't boot against the current home while the user may be
   // about to switch to a different one.
   useHive(hiveOpened ? config : null);
 
@@ -204,7 +208,7 @@ export function App() {
   // hive (it would fire fake envelope handoffs and step seeded agents). Run it
   // only as an explicit showcase (VITE_CTH_DEMO=1 in dev) or on a genuinely
   // empty floor, and stop it the instant the first real PTY agent appears
-  // (Michael always spawns, so in normal operation it effectively never runs).
+  // (Sekhon Manager always spawns, so in normal operation it effectively never runs).
   useEffect(() => {
     if (!config?.onboardingComplete) return;
     const DEMO = import.meta.env.DEV && import.meta.env.VITE_CTH_DEMO === '1';
@@ -274,7 +278,7 @@ export function App() {
       width: '100vw', height: '100vh',
       overflow: 'hidden'
     }}>
-      {/* rt-12: global fixed-overlay toast for voice-Michael completions ("Oscar
+      {/* rt-12: global fixed-overlay toast for voice-Sekhon Manager completions ("Business Analyst
           finished X"). Self-positions bottom-right; renders null until one arrives. */}
       <CompletionToast />
       {/* v0.3.4: background-update toast ("restart to update"); renders null until
@@ -295,11 +299,59 @@ export function App() {
           userSelect: 'none'
         }}
       >
-        <img
-          src={brandLogo}
-          alt="Munder Difflin"
-          style={{ height: 20, width: 'auto', display: 'block' }}
-        />
+        <div
+          className="cth-titlebar-nodrag"
+          aria-label="Sekhon AI Office"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 7,
+            fontFamily: 'var(--cth-font-display)', fontSize: 9,
+            color: 'var(--cth-ink-900)', letterSpacing: '0.02em'
+          }}
+        >
+          <span style={{
+            width: 22, height: 22, display: 'grid', placeItems: 'center',
+            background: '#15242b', color: '#7df3df',
+            boxShadow: 'inset 0 0 0 2px #61d6c5', fontSize: 8
+          }}>SA</span>
+          <span>SEKHON AI OFFICE</span>
+        </div>
+        <div className="cth-titlebar-nodrag" style={{ display: 'inline-flex', gap: 3 }}>
+          {([
+            ['studio', '3D STUDIO'],
+            ['agency', 'AGENCY']
+          ] as const).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => chooseBusinessWorkspace(id)}
+              aria-pressed={businessWorkspace === id}
+              style={{
+                border: 'none', cursor: 'pointer', padding: '4px 7px 3px',
+                fontFamily: 'var(--cth-font-display)', fontSize: 7,
+                color: 'var(--cth-ink-900)',
+                background: businessWorkspace === id ? 'var(--cth-mint-light)' : 'var(--cth-paper-100)',
+                boxShadow: businessWorkspace === id
+                  ? 'inset 0 0 0 1.5px var(--cth-ink-500)'
+                  : 'inset 0 0 0 1px var(--cth-ink-300)'
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {businessWorkspace === 'agency' && (
+          <button
+            className="cth-titlebar-nodrag"
+            onClick={() => setLeadsOpen(true)}
+            style={{
+              border: 'none', cursor: 'pointer', padding: '4px 7px 3px',
+              fontFamily: 'var(--cth-font-display)', fontSize: 7,
+              color: 'var(--cth-ink-900)', background: 'var(--cth-paper-100)',
+              boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)'
+            }}
+          >
+            LEADS
+          </button>
+        )}
         {/* v0.3.7: the version is no longer inert text — it doubles as the
             update control (check / download / restart to update). */}
         <UpdateBadge />
@@ -486,6 +538,8 @@ export function App() {
           onConfigChange={setConfig}
         />
       )}
+
+      {leadsOpen && <LeadsBoardModal onClose={() => setLeadsOpen(false)} />}
 
       {settingsOpen && (
         <SettingsModal

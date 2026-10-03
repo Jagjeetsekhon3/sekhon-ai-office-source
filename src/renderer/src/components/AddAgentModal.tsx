@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PixelPanel } from './PixelPanel';
 import { PixelButton } from './PixelButton';
@@ -15,8 +15,7 @@ import {
   OSS_LOCAL_PICKS,
   OSS_PROVIDER_PICKS,
   localSlugFor,
-  hasOssQuickPicks,
-  OSS_BLOG_LINKS
+  hasOssQuickPicks
 } from '@shared/ossModels';
 import {
   type AgentProvider,
@@ -29,6 +28,8 @@ import {
   providerPreset,
   isClaudeProvider
 } from '@/store/config';
+import { templatesForWorkspace, selectedTemplate, draftAfterWorkspaceChange } from '@shared/agentTemplates';
+import { BusinessWorkspacePicker } from './BusinessWorkspacePicker';
 import { useRtl } from '@/i18n/useDirection';
 
 const ACCENTS: AccentColorName[] = ['coral', 'mint', 'sky', 'lemon', 'lilac', 'peach'];
@@ -45,57 +46,24 @@ const ossGroupHead: CSSProperties = {
   fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
   color: 'var(--cth-ink-500)', textTransform: 'uppercase', marginBottom: 4
 };
-const ossLink: CSSProperties = { color: 'var(--cth-ink-900)', textDecoration: 'underline', cursor: 'pointer' };
-
-// One-click briefing templates — fill Description + Goal with a sharp, ready-to-run
-// role so a user isn't staring at a blank field (item 7). The template BRIEFINGS
-// stay English (they become agent prompts — see the i18n report); only the
-// picker labels are translated.
-const DESCRIPTION_TEMPLATES: { labelKey: string; description: string; goal: string }[] = [
-  {
-    labelKey: 'addAgent.templatesHint.repoJanitor.label',
-    description: 'keeps the codebase tidy and healthy',
-    goal: 'Continuously hunt for dead code, lint errors, flaky tests, and small safe refactors. Fix the safe ones and leave a note for anything risky. Never change behavior without flagging it.'
-  },
-  {
-    labelKey: 'addAgent.templatesHint.docsWriter.label',
-    description: 'keeps docs in sync with the code',
-    goal: 'Watch for code changes that outdate the README and docs, then update them. Write for newcomers and prefer concrete examples over prose.'
-  },
-  {
-    labelKey: 'addAgent.templatesHint.bugTriager.label',
-    description: 'investigates and root-causes bugs',
-    goal: 'For each reported issue: reproduce it, find the root cause, then propose a minimal fix with evidence. No fixes without a confirmed root cause.'
-  },
-  {
-    labelKey: 'addAgent.templatesHint.researchAssistant.label',
-    description: 'gathers and summarizes information',
-    goal: 'Research the questions you are given across multiple sources, verify the key claims, and return a concise, cited summary.'
-  },
-  {
-    labelKey: 'addAgent.templatesHint.releaseManager.label',
-    description: 'prepares and ships releases',
-    goal: 'Track what has shipped since the last release, update the changelog and version, and draft clear release notes.'
-  }
-];
 
 // Copy-paste prompt the user hands to any AI to generate a hire manifest. It pins
 // the exact JSON shape the importer accepts and ends with a fill-in section so the
 // user adds their own details (item 7). Kept in sync with the HireManifest schema
-// (src/shared/hire.ts) — provider allowlist is claude | codex | antigravity | cursor.
-const HIRE_PROMPT = `You are designing a "hire" — a ready-to-spawn AI agent for Munder Difflin, an app that runs a team of CLI coding agents. Output ONE JSON object (a hire manifest) and nothing else.
+// (src/shared/hire.ts) — provider allowlist is claude | codex | antigravity | cursor | sekhon-local.
+const HIRE_PROMPT = `You are designing a "hire" — a ready-to-spawn AI teammate for Sekhon AI Office, a local-first app used for Sekhon Studio and a one-person freelance advertising agency. Output ONE JSON object (a hire manifest) and nothing else.
 
-Make the agent genuinely useful: give it a sharp role, a concrete standing goal, and a description that makes it behave like an expert operator of its CLI engine (Claude Code, Codex, or Antigravity/Gemini). It should know how to use the terminal, read and edit files, run and inspect commands, lean on available skills and MCP tools, keep notes in memory, and work autonomously toward its goal without hand-holding.
+Make the agent genuinely useful: give it a sharp business role, a concrete standing goal, and a description that makes it behave like a specialist teammate. It may use its CLI engine, terminal, files, available skills and MCP tools when relevant. It should keep useful notes and work autonomously within its role, but it must leave client contact, proposal submission, pricing commitments, spending, publishing and destructive actions for explicit human approval.
 
 Return EXACTLY this shape (omit optional fields you don't need; keep the spec string verbatim):
 
 {
-  "spec": "munder-difflin/hire@1",
-  "name": "Jim",
+  "spec": "sekhon-ai-office/hire@1",
+  "name": "Agent",
   "description": "one-line role — what this agent is for",
   "goal": "standing directive injected on every prompt — specific and outcome-oriented",
-  "provider": "claude",
-  "model": "claude-opus-4-8[1m]",
+  "provider": "sekhon-local",
+  "model": "qwen3:8b",
   "capabilities": ["code-review", "docs"],
   "isolate": false,
   "tokenCap": 2000000,
@@ -103,13 +71,13 @@ Return EXACTLY this shape (omit optional fields you don't need; keep the spec st
 }
 
 Rules:
-- "provider" MUST be one of: cursor | claude | codex | antigravity. "model" must be a real model id for that provider (e.g. gpt-5.6-luna-high, claude-opus-4-8[1m], gpt-5-codex, "Gemini 3.1 Pro (High)").
+- "provider" MUST be one of: cursor | claude | codex | antigravity | sekhon-local. "model" must be a real model id for that provider. For sekhon-local, use an installed model id reported by Settings → Agents & Models (for example qwen3:8b).
 - Do NOT include shell commands or any flags beyond these fields.
 - Make "description" + "goal" concrete enough that the agent knows exactly what to do on its first turn.
 
 --- ADD YOUR DETAILS BELOW (the AI should use these) ---
 Role / what I want this agent to do:
-Preferred engine (claude / codex / antigravity), if any:
+Preferred engine (claude / codex / antigravity / cursor / sekhon-local), if any:
 Repos, tools, style, or constraints to respect:
 `;
 
@@ -146,6 +114,8 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
   const { t: tr } = useTranslation();
   const rtl = useRtl();
   const addAgent = useStore(s => s.addAgent);
+  const businessWorkspace = useStore(s => s.businessWorkspace);
+  const templates = templatesForWorkspace(businessWorkspace);
   // Deep links and file batches share one FIFO. The head alone seeds the form;
   // every item still requires an explicit spawn or skip.
   const hireQueue = useStore(s => s.hireQueue);
@@ -160,11 +130,11 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
     (ACCENTS.includes(a as AccentColorName) ? (a as AccentColorName) : 'sky');
   /** The cast member a typed name refers to, if any.
    *
-   *  The character tiles already set the name (clicking Meredith names the agent
-   *  Meredith), but the coupling ran ONE WAY, so typing "Meredith" left the
-   *  avatar on whatever was selected, in practice the Jim default. Same missing
+   *  The character tiles already set the name (clicking Supplier Relations names the agent
+   *  Supplier Relations), but the coupling ran ONE WAY, so typing "Supplier Relations" left the
+   *  avatar on whatever was selected, in practice the Business Lead default. Same missing
    *  default as issue #191 from the other direction, where a manifest that omits
-   *  `character` always lands on Jim.
+   *  `character` always lands on Business Lead.
    *
    *  Returns null on no match, and the caller leaves the avatar alone, so a
    *  deliberate pick is never overwritten by continuing to type. */
@@ -188,7 +158,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
   const initialProvider = inferAgentProvider(config.defaultCommand);
   const initialModel = isClaudeProvider(initialProvider) ? config.defaultModel : undefined;
 
-  const [name, setName] = useState(pendingHire?.name ?? 'Jim');
+  const [name, setName] = useState(pendingHire?.name ?? 'Agent');
   const [character, setCharacter] = useState<OfficeCharacterName>(knownCharacter(pendingHire?.character));
   const [accent, setAccent] = useState<AccentColorName>(knownAccent(pendingHire?.accent));
   const [cwd, setCwd] = useState<string>(config.registeredRepos[0] ?? '');
@@ -219,7 +189,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
     setProvider(id);
     // Seed the model: Claude from the global defaultModel; other engines from the
     // per-engine default set in Settings → AI Engines (providerDefaultModels), else
-    // the CLI default. This is what makes that Settings field live (Dwight NIT-1).
+    // the CLI default. This is what makes that Settings field live (Studio Manager NIT-1).
     const nextModel = isClaudeProvider(id) ? config.defaultModel : config.providerDefaultModels?.[id];
     setModel(nextModel);
     const nextPreset = providerPreset(id);
@@ -245,7 +215,20 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
   const [error, setError] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
   // Which config section the left sidebar index is showing.
-  const [section, setSection] = useState<SectionKey>('identity');
+  const [section, setSection] = useState<SectionKey>(pendingHire ? 'identity' : 'briefing');
+  const activeTemplate = selectedTemplate(businessWorkspace, { name, description, goal });
+  const previousWorkspace = useRef(businessWorkspace);
+  useLayoutEffect(() => {
+    const previous = previousWorkspace.current;
+    previousWorkspace.current = businessWorkspace;
+    const draft = { name, description, goal };
+    const next = draftAfterWorkspaceChange(previous, businessWorkspace, draft, !!hireMeta);
+    if (next !== draft) {
+      setName(next.name);
+      setDescription(next.description);
+      setGoal(next.goal);
+    }
+  }, [businessWorkspace, name, description, goal, hireMeta]);
   // "Generate a hire with AI" helper — reveals a copy-paste prompt (item 7).
   const [showHirePrompt, setShowHirePrompt] = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
@@ -339,7 +322,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
     setHireMeta(m);
     setName(m.name);
     // A manifest that names an agent but omits `character` should get the
-    // matching avatar rather than the Jim default (issue #191).
+    // matching avatar rather than the Business Lead default (issue #191).
     setCharacter(m.character ? knownCharacter(m.character) : (characterForName(m.name ?? '') ?? knownCharacter(undefined)));
     setAccent(knownAccent(m.accent));
     setProvider(m.provider ?? initialProvider);
@@ -530,6 +513,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
               around the section pane. maxHeight keeps the dialog within the
               viewport (title bar stays pinned). */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16, maxHeight: '86vh', overflowY: 'auto' }}>
+            <BusinessWorkspacePicker />
             {hireMeta && (
               <div style={{
                 padding: '6px 10px',
@@ -995,19 +979,7 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
 
                     {(provider === 'opencode' || provider === 'crush' || provider === 'pi' || provider === 'qwen') && (
                       <div style={{ fontSize: 12, color: 'var(--cth-ink-500)', lineHeight: '16px', margin: '2px 0 6px' }}>
-                        {tr('addAgent.byokNote')}
-                        {' '}
-                        <a
-                          href={OSS_BLOG_LINKS.openModels}
-                          onClick={(e) => { e.preventDefault(); void window.cth.openExternal(OSS_BLOG_LINKS.openModels); }}
-                          style={ossLink}
-                        >{tr('addAgent.runOnOpenModels')}</a>
-                        {' '}
-                        <a
-                          href={OSS_BLOG_LINKS.macMini}
-                          onClick={(e) => { e.preventDefault(); void window.cth.openExternal(OSS_BLOG_LINKS.macMini); }}
-                          style={ossLink}
-                        >{tr('addAgent.setUpMacMini')}</a>.
+                        Local and BYOK models can be configured in Settings → AI Engines. Ollama models can be detected, downloaded and assigned there.
                       </div>
                     )}
 
@@ -1032,22 +1004,23 @@ export function AddAgentModal({ onClose, config, onConfigChange }: AddAgentModal
 
                 {section === 'briefing' && (
                   <>
-                    <Row label={tr('addAgent.templates')}>
+                    <Row label={tr('addAgent.templates')} group>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        {DESCRIPTION_TEMPLATES.map((t) => (
+                        {templates.map((t) => (
                           <button
-                            key={t.labelKey}
-                            onClick={() => { setDescription(t.description); setGoal(t.goal); }}
+                            key={t.id}
+                            aria-pressed={activeTemplate?.id === t.id}
+                            onClick={() => { setName(t.name); setDescription(t.description); setGoal(t.goal); setCharacter(characterForName(t.name) ?? DEFAULT_CHARACTER); }}
                             title={t.goal}
                             style={{
                               padding: '3px 8px 1px',
-                              background: 'var(--cth-cream-100)',
-                              boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+                              background: activeTemplate?.id === t.id ? 'var(--cth-mint-light)' : 'var(--cth-cream-100)',
+                              boxShadow: activeTemplate?.id === t.id ? 'inset 0 0 0 1.5px var(--cth-mint)' : 'inset 0 0 0 1px var(--cth-ink-100)',
                               fontFamily: 'var(--cth-font-ui)', fontSize: 12,
                               color: 'var(--cth-ink-900)', cursor: 'pointer', border: 'none'
                             }}
                           >
-                            {tr(t.labelKey)}
+                            {t.label}
                           </button>
                         ))}
                       </div>
@@ -1177,9 +1150,10 @@ const inputStyle: React.CSSProperties = {
   outline: 'none'
 };
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({ label, children, group = false }: { label: string; children: React.ReactNode; group?: boolean }) {
+  const Container = group ? 'div' : 'label';
   return (
-    <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <Container role={group ? 'group' : undefined} aria-label={group ? label : undefined} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <span style={{
         fontFamily: 'var(--cth-font-display)',
         fontSize: 8, lineHeight: '12px',
@@ -1187,6 +1161,6 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
         textTransform: 'uppercase'
       }}>{label}</span>
       {children}
-    </label>
+    </Container>
   );
 }

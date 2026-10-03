@@ -702,7 +702,13 @@ export class PtyManager {
         // oversized write still leaves us its end (the part that explains a death).
         session.tail = (session.tail + data).slice(-TAIL_MAX);
         // Route to the session's owner window (multi-window owner routing).
-        this.safeSend(`pty:data:${opts.id}`, data, session.owner);
+        // A PTY can be spawned during renderer bootstrap before Electron has a
+        // usable owner WebContents. Do not let a stale/destroyed owner black-hole
+        // the stream: fall back to the currently attached primary renderer.
+        const target = session.owner && !session.owner.isDestroyed()
+          ? session.owner
+          : this.webContents;
+        this.safeSend(`pty:data:${opts.id}`, data, target);
       });
       proc.onExit(({ exitCode, signal }) => {
         // Stale exit from a process whose id was reclaimed (kill()+respawn) — do
@@ -757,13 +763,14 @@ export class PtyManager {
     }
   }
 
-  /** Ask the foreground TUI for a fresh frame without changing its geometry.
-   *  Startup output may predate the renderer subscription, and a same-sized
-   *  first fit otherwise emits no resize. */
+  /** Replay buffered startup output, then ask the foreground TUI for a fresh
+   *  frame. A simple line-oriented local agent does not repaint on resize, so
+   *  resize alone cannot recover output emitted before the renderer subscribed. */
   redraw(id: string): { ok: boolean; error?: string } {
     const s = this.sessions.get(id);
     if (!s) return { ok: false, error: `no pty: ${id}` };
     try {
+      if (s.tail) this.safeSend(`pty:data:${id}`, s.tail, s.owner);
       s.proc.resize(s.proc.cols, s.proc.rows);
       return { ok: true };
     } catch (e) {
