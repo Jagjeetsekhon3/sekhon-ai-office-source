@@ -763,13 +763,14 @@ export class PtyManager {
     }
   }
 
-  /** Ask the foreground TUI for a fresh frame without changing its geometry.
-   *  Startup output may predate the renderer subscription, and a same-sized
-   *  first fit otherwise emits no resize. */
+  /** Replay buffered startup output, then ask the foreground TUI for a fresh
+   *  frame. A simple line-oriented local agent does not repaint on resize, so
+   *  resize alone cannot recover output emitted before the renderer subscribed. */
   redraw(id: string): { ok: boolean; error?: string } {
     const s = this.sessions.get(id);
     if (!s) return { ok: false, error: `no pty: ${id}` };
     try {
+      if (s.tail) this.safeSend(`pty:data:${id}`, s.tail, s.owner);
       s.proc.resize(s.proc.cols, s.proc.rows);
       return { ok: true };
     } catch (e) {
