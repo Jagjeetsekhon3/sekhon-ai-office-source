@@ -25,7 +25,7 @@ test('batch import keeps every valid manifest and reports invalid files independ
 
     const result = readHireManifestFiles([jim, brokenJson, invalidManifest, pam]);
 
-    assert.deepEqual(result.manifests.map((m) => m.name), ['Jim', 'Pam']);
+    assert.deepEqual(result.manifests.map((m) => m.name), ['Business Lead', 'Creative Director']);
     assert.equal(result.errors.length, 2);
     assert.match(result.errors[0], /02-broken\.json/);
     assert.match(result.errors[1], /03-missing-name\.json/);
@@ -99,7 +99,7 @@ test('batch token caps persist atomically before review advances', () => {
 });
 
 test('Command Center sets and clears one cap through the atomic IPC', () => {
-  const panel = readFileSync('src/renderer/src/components/CommandCenterPanel.tsx', 'utf8');
+  const panel = readFileSync('src/renderer/src/components/CommandCenterPanel.tsx', 'utf8').replace(/\r\n/g, '\n');
   const start = panel.indexOf('const setAgentCap =');
   const end = panel.indexOf('\n\n  // The token meter', start);
   const capFlow = panel.slice(start, end);

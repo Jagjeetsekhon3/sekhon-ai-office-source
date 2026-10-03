@@ -313,7 +313,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
   };
 
   // --- circuit-breaker config (Lane A #6 canonical fields, widened view) ---
-  // Drives Jim's real breaker: floor-wide TOKEN budget (costCapTokens) + output-
+  // Drives Business Lead's real breaker: floor-wide TOKEN budget (costCapTokens) + output-
   // token velocity ceiling (circuitBreaker.tokenVelocityPerMin). The token cap
   // replaced the old dollar cap as the user-facing budget.
   type BreakerCfgView = HarnessConfig & {
@@ -499,8 +499,8 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
   // --- Free Flow (voice dictation → message queue) ---
   const setFreeflowEnabledStore = useStore((s) => s.setFreeflowEnabled);
   const setHasGroqKeyStore = useStore((s) => s.setHasGroqKey);
-  // Talk (Realtime Michael) is gated on the OpenAI key — read the live presence
-  // boolean so the Realtime Michael section can show its enabled/disabled status.
+  // Talk (Realtime Sekhon Manager) is gated on the OpenAI key — read the live presence
+  // boolean so the Realtime Sekhon Manager section can show its enabled/disabled status.
   const hasOpenAiKey = useStore((s) => s.hasOpenAiKey);
   // Voice-tab entry for the SAME broker slot Agents & Models writes (apikey:openai).
   // Mirroring presence into the store on save is what makes the Talk button light up
@@ -1895,7 +1895,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                     </>
                   )}
 
-                  {/* VOICE — Free Flow dictation + Realtime Michael (v0.3.4: its own tab) */}
+                  {/* VOICE — Free Flow dictation + Realtime Sekhon Manager (v0.3.4: its own tab) */}
                   {activeSection === 'Voice' && (
                     <>
                       {/* Free Flow (voice dictation) */}
@@ -1972,7 +1972,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
 
                       <div style={sectionRule} />
 
-                      {/* Realtime Michael — voice device selection (rt-8) */}
+                      {/* Realtime Sekhon Manager — voice device selection (rt-8) */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         <div style={sectionHeadTight}>
                           {t('settings.voice.realtime')}

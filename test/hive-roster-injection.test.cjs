@@ -112,13 +112,13 @@ test('renaming changes only the display name and reaches god immediately', async
   const agentDir = path.join(home, 'hive', 'agents', 'jim-1');
   const before = hive.registry().agents['jim-1'];
 
-  const result = hive.renameAgent('jim-1', '  Kevin  ');
+  const result = hive.renameAgent('jim-1', '  Jagjeet  ');
 
-  assert.deepEqual(result, { ok: true, name: 'Kevin' });
-  assert.deepEqual(hive.registry().agents['jim-1'], { ...before, name: 'Kevin' },
+  assert.deepEqual(result, { ok: true, name: 'Jagjeet' });
+  assert.deepEqual(hive.registry().agents['jim-1'], { ...before, name: 'Jagjeet' },
     'registry metadata must be unchanged apart from the display name');
   assert.equal(fs.existsSync(agentDir), true, 'the id-derived agent directory must not move');
-  assert.match(hive.rosterContext(), /jim-1 "Kevin"/);
+  assert.match(hive.rosterContext(), /jim-1 "Jagjeet"/);
   assert.doesNotMatch(hive.rosterContext(), /jim-1 "Jim"/);
 });
 
@@ -127,7 +127,7 @@ test('rename rejects empty and unknown agents without changing the registry', as
 
   assert.equal(hive.renameAgent('jim-1', '   ').ok, false);
   assert.equal(hive.renameAgent('missing', 'Kevin').ok, false);
-  assert.equal(hive.registry().agents['jim-1'].name, 'Jim');
+  assert.equal(hive.registry().agents['jim-1'].name, 'Business Lead');
 });
 
 test('god gets the roster on SessionStart and on every prompt — nobody else does', async (t) => {

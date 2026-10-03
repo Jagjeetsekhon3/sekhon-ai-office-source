@@ -234,7 +234,7 @@ test('the published JSON schema reflects runtime providers and allowlists', () =
   const schema = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs/hires/spec/hire.schema.json'), 'utf8'));
   assert.deepEqual(
     schema.properties.provider.enum,
-    ['claude', 'antigravity', 'agy', 'codex', 'cursor']
+    ['claude', 'antigravity', 'agy', 'codex', 'cursor', 'sekhon-local']
   );
   assert.deepEqual(schema.properties.skills.items.enum, Array.from(BUNDLED_SKILL_IDS));
   assert.deepEqual(schema.properties.mcpServers.items.enum, MCP_CATALOG.map(({ id }) => id));

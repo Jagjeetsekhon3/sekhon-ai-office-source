@@ -4,7 +4,7 @@ import type { AgentProvider } from './agentProvider';
  * Open-source model quick-picks for the Add-Agent modal (ondev-c part-2).
  *
  * Curated, STABLE shortlist transcribed verbatim from the verified catalog
- * `hive/shared/cli-agents/oss-models-catalog.md` §7 (frozen by Jim). Robust slugs
+ * `hive/shared/cli-agents/oss-models-catalog.md` §7 (frozen by Business Lead). Robust slugs
  * only — bleeding-edge frontier models (GLM-5.2, Kimi-K2.7) are intentionally
  * EXCLUDED from code defaults (catalog §8 = verify-live) and left to the blogs.
  *
@@ -71,6 +71,6 @@ export function hasOssQuickPicks(provider: AgentProvider): boolean {
 
 /** Canonical blog URLs the local-setup UI hyperlinks to (ondev-c part-3). */
 export const OSS_BLOG_LINKS = {
-  openModels: 'https://munderdiffl.in/blog/run-munder-difflin-on-open-models/',
-  macMini: 'https://munderdiffl.in/blog/run-munder-difflin-on-a-mac-mini/'
+  openModels: 'https://github.com/Jagjeetsekhon3/sekhon-ai-office-source',
+  macMini: 'https://github.com/Jagjeetsekhon3/sekhon-ai-office-source'
 } as const;

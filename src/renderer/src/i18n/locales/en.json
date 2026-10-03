@@ -175,9 +175,9 @@
   },
   "officeTheme": {
     "title": "Office Theme",
-    "tvShow": "TV-show office themes",
+    "tvShow": "Sekhon office styles",
     "experimental": "experimental",
-    "desc": "Re-skin the pixel office as a TV show. Switching starts a fresh cast.",
+    "desc": "Original office styles for Sekhon AI Office.",
     "current": "current",
     "soon": "soon",
     "notBuiltYet": "{{label}} isn't built yet — showing the office for now.",
@@ -740,29 +740,19 @@
         "tidying up a little"
       ],
       "smoke": [
-        "the floor runs itself 🚬",
-        "boss break.",
-        "thinking big thoughts 🚬",
-        "I DECLARE… a break"
+        "Taking a short break.",
+        "Thinking through the next milestone."
       ]
     },
     "suckUp": [
-      "already shipped {{done}} tasks, {{godName}}. raise? 🥺",
-      "{{done}} tasks done this week, boss!",
-      "great vision as always, boss!",
-      "I was JUST about to do exactly that!",
-      "love the tie today, {{godName}}",
-      "working hard, boss! 💪",
-      "best boss ever. genuinely."
+      "{{done}} tasks completed.",
+      "Ready for the next milestone, {{godName}}.",
+      "Good progress today."
     ],
     "gossip": [
-      "has he ever actually written code?",
-      "another 'quick sync' that took an hour…",
-      "'world's best boss' — he bought that mug himself",
-      "he pinned MY task as his idea",
-      "the cigar smell, honestly…",
-      "he watered the plant. ONE plant. his own.",
-      "did you hear him? 'I DECLARE… a break'"
+      "Reviewing the next milestone.",
+      "The task board is up to date.",
+      "A quick break before the next review."
     ],
     "cheer": [
       "done! ✔",

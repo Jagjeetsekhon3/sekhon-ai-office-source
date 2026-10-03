@@ -1,7 +1,7 @@
-# Hire manifest spec — `munder-difflin/hire@1`
+# Hire manifest spec — `sekhon-ai-office/hire@1`
 
 A **hire manifest** is a small JSON document describing a role-configured agent for the
-[Munder Difflin](https://github.com/chaitanyagiri/munder-difflin) multi-agent harness:
+[Sekhon AI Office](https://github.com/Jagjeetsekhon3/sekhon-ai-office-source) multi-agent harness:
 its name, sprite, provider, model, command flags, goal, capability tags, and token budget.
 Because it's just JSON, a role can be shared as a file, hosted in a community gallery,
 and imported into anyone's office with one click.
@@ -10,8 +10,8 @@ and imported into anyone's office with one click.
 
 ```json
 {
-  "spec": "munder-difflin/hire@1",
-  "name": "Pam",
+  "spec": "sekhon-ai-office/hire@1",
+  "name": "Creative Director",
   "description": "Documentation writer",
   "goal": "Keep the project's docs accurate. When a feature merges, update README and docs/, and flag stale pages to the orchestrator.",
   "character": "pam",
@@ -36,7 +36,7 @@ lives in the app at `src/shared/hire.ts` (this schema mirrors it).
 
 Two transports, same pipeline (validate → pre-fill the Add-Agent modal → human reviews → human clicks spawn):
 
-1. **Deep link** — `munderdifflin://hire?src=<https-url-of-manifest>`. A gallery site's
+1. **Deep link** — `sekhonaioffice://hire?src=<https-url-of-manifest>`. A gallery site's
    "Hire" button fires this; the app fetches the manifest (https only — plain http allowed for localhost galleries during development — 10s timeout, 64 KB cap),
    validates it, and opens the pre-filled Add-Agent modal.
 2. **File import** — the "import hire…" button in the Add-Agent modal opens a `.json` picker.
@@ -71,7 +71,7 @@ not shareable; add an exceptional flag by hand after import if you trust and nee
 
 | Field | Type | Req | Notes |
 |---|---|---|---|
-| `spec` | `"munder-difflin/hire@1"` | ✅ | exact string |
+| `spec` | `"sekhon-ai-office/hire@1"` | ✅ | exact string |
 | `name` | string ≤ 40 | ✅ | display name + hive id seed |
 | `description` | string ≤ 200 | | one-line role |
 | `goal` | string ≤ 4000 | | standing mission text |

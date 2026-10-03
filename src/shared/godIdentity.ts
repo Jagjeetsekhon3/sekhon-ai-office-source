@@ -1,3 +1,4 @@
+import { sekhonAgentName } from './sekhonIdentity';
 /** God's identity before anyone has customized it — the app's own default,
  *  not a magic string sprinkled at every spawn call site. */
 export const DEFAULT_GOD_NAME = 'Sekhon Manager';
@@ -16,5 +17,5 @@ export const DEFAULT_GOD_NAME = 'Sekhon Manager';
  */
 export function resolveGodName(persistedName: string | undefined | null): string {
   const trimmed = persistedName?.trim();
-  return trimmed ? trimmed : DEFAULT_GOD_NAME;
+  return trimmed ? sekhonAgentName(trimmed) : DEFAULT_GOD_NAME;
 }

@@ -1,5 +1,5 @@
 /**
- * Usage telemetry seam (Lane A #6.6 — Seam 1, the LOCKED contract with Oscar/#7).
+ * Usage telemetry seam (Lane A #6.6 — Seam 1, the LOCKED contract with Business Analyst/#7).
  *
  * The circuit breaker (breaker.ts) and the durable cost ledger (hive.ts
  * appendCostLedger) consume usage ONLY through the `UsageProvider` interface —
@@ -12,7 +12,7 @@
  *   - ADDITIVE (push): `onAgentUsage(cb)` — OTel-backend only, a later
  *     zero-rewrite latency upgrade. The stub does not implement it.
  *
- * Two invariants every consumer must honor (Oscar's 7A.1 spike findings):
+ * Two invariants every consumer must honor (Business Analyst's 7A.1 spike findings):
  *   (i)  Samples are CUMULATIVE snapshots (monotonic running totals). Velocity is
  *        the DIFF of consecutive pulls (Δusd/Δt, Δoutput/Δt) — never treat a
  *        single sample as an increment.
@@ -20,16 +20,16 @@
  *
  * `StubUsageProvider` is a thin INTERIM backend so Lane A isn't blocked on Lane C:
  * it wraps the existing transcript reader (readAgentUsage) — the same interim
- * "transcript-poll" backend Oscar owns and will evolve, then replace with the
- * native-OTel collector. At integration we drop in Oscar's module; breaker.ts and
+ * "transcript-poll" backend Business Analyst owns and will evolve, then replace with the
+ * native-OTel collector. At integration we drop in Business Analyst's module; breaker.ts and
  * the ledger are untouched. The stub's `usd` is the transcript fallback estimate
- * (and inherits the known Sonnet-hardcoded pricing limitation, which Oscar fixes
+ * (and inherits the known Sonnet-hardcoded pricing limitation, which Business Analyst fixes
  * in exactly one place — his provider); it is NOT recomputed downstream.
  */
 import { readAgentUsage } from './transcript';
 
-/** One cumulative usage snapshot for an agent. The identical row that Oscar
- *  emits, Jim (this lane) persists to cost-ledger.jsonl, and Kevin (#4) stores
+/** One cumulative usage snapshot for an agent. The identical row that Business Analyst
+ *  emits, Business Lead (this lane) persists to cost-ledger.jsonl, and Accountant (#4) stores
  *  in the cost_ledger SQLite table — one shape across all three lanes.
  *
  *  🔒 PII-free by construction: the provider's normalize step allowlists only
@@ -68,7 +68,7 @@ export interface UsageResolver {
 }
 
 /** Strip the `[1m]` (or `[…]`) context-window suffix so the model id matches the
- *  normalized form Oscar's OTel ingest emits. */
+ *  normalized form Business Analyst's OTel ingest emits. */
 function normalizeModel(model: string | null | undefined): string | null {
   if (!model) return null;
   return model.replace(/\[[^\]]*\]$/, '').trim() || null;
@@ -77,7 +77,7 @@ function normalizeModel(model: string | null | undefined): string | null {
 /**
  * Interim transcript-backed provider. Reads cumulative token totals from an
  * agent's Claude Code transcripts (readAgentUsage) and shapes them into an
- * AgentUsageSample. Stands in for Oscar's provider until Lane C lands; the
+ * AgentUsageSample. Stands in for Business Analyst's provider until Lane C lands; the
  * consumers (breaker, ledger) call it through UsageProvider and never change.
  */
 export class StubUsageProvider implements UsageProvider {
@@ -96,7 +96,7 @@ export class StubUsageProvider implements UsageProvider {
       cacheRead: u.cacheReadTokens,
       cacheCreation: u.cacheWriteTokens,
       model: normalizeModel(info.model),
-      usd: u.estimatedCostUsd // interim fallback estimate; Oscar's provider supplies Claude-precomputed usd
+      usd: u.estimatedCostUsd // interim fallback estimate; Business Analyst's provider supplies Claude-precomputed usd
     };
   }
 }

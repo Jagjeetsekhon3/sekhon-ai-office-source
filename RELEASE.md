@@ -1,8 +1,8 @@
 <!-- RELEASE RUNNER, REQUIRED BEFORE YOU TAG: run RELEASE-CHECKLIST.md. Rehearse the updater on 0.4.6-rc.1 -> 0.4.7-rc.1 prereleases and pass the fault-injection checks BEFORE tagging the real release. This comment is not rendered in the published notes. -->
-# Munder Difflin v0.4.6
+# Sekhon AI Office v0.4.6
 
 **A local hive of Claude Code, Antigravity, Codex, Gemini, Cursor, Grok & Copilot agents that run themselves.**
-Messaging, routing, and remembering, coordinated by your clone, Michael, who you talk to. Local-first and open source.
+Messaging, routing, and remembering, coordinated by your clone, Sekhon Manager, who you talk to. Local-first and open source.
 
 ### → [**munderdiffl.in**](https://munderdiffl.in/) · see it in action, then grab a build below
 
@@ -59,7 +59,7 @@ reviewed a pull request or filed the bug that led to one.
 
 <!-- drop -->
 <div class="drop">
-  <p class="eyebrow">Munder Difflin 0.4.6</p>
+  <p class="eyebrow">Sekhon AI Office 0.4.6</p>
   <h1>Speaks your language. Updates itself.</h1>
   <p class="lede">The interface now runs in Chinese and Arabic, the updater installs a new build end
   to end, and the fonts ship inside the app so a blocked network never leaves you on a blank screen.</p>
@@ -127,7 +127,7 @@ paths everywhere, one editor instead of two, and 23 community pull requests.
   run after an update opens that release's page.
 - **Settings opens with a card** carrying your version, your plan, and a way back to these notes.
 - **Terminals follow the window theme,** Gemini CLI and Cursor Agent join the engine list, and
-  Michael hires on his own terms with editable agent names.
+  Sekhon Manager hires on his own terms with editable agent names.
 
 ## Still new in 0.4.4 · *Windows joins the floor*
 
@@ -154,10 +154,10 @@ the app.
 
 ---
 
-## Still new in 0.4.3 — *Michael is the logo*
+## Still new in 0.4.3 — *Sekhon Manager is the logo*
 
-**The mark is a face now.** Munder Difflin has always been an office you watch people work in,
-and the icon was a pair of script initials on a gradient. It's Michael — your clone — drawn in
+**The mark is a face now.** Sekhon AI Office has always been an office you watch people work in,
+and the icon was a pair of script initials on a gradient. It's Sekhon Manager — your clone — drawn in
 the app's own pixel art, on the brand yellow, looking straight back at you.
 
 - **One mark, everywhere.** The dock icon on macOS, Windows and Linux, the site favicon and
@@ -182,7 +182,7 @@ the app's own pixel art, on the brand yellow, looking straight back at you.
 
 ## Still new in 0.4.2 — *Anonymous usage stats, done in the open*
 
-Munder Difflin now sends a **small set of anonymous usage events** (app opened, agent spawned,
+Sekhon AI Office now sends a **small set of anonymous usage events** (app opened, agent spawned,
 feature used) so we can tell whether features are actually used. It is built the way an
 open-source project should build it:
 
@@ -200,10 +200,10 @@ open-source project should build it:
 
 ## Still new in 0.4.1 — *The app says what the site says*
 
-**Michael is your clone.** The website has been describing Munder Difflin as a clone of you that
+**Sekhon Manager is your clone.** The website has been describing Sekhon AI Office as a clone of you that
 works around the clock — the app still called it a "GOD agent." Now they match.
 
-- **Your clone, not the GOD agent.** Michael is described as your clone throughout onboarding,
+- **Your clone, not the GOD agent.** Sekhon Manager is described as your clone throughout onboarding,
   and his card on the floor carries a **BOSS** tag — he's the boss of the agents, you're still
   the boss of him.
 - **Onboarding was rewritten.** It opens on what you actually get ("a clone of you, working
@@ -247,7 +247,7 @@ works around the clock — the app still called it a "GOD agent." Now they match
   [@gts-47](https://github.com/gts-47) and [@qschmick](https://github.com/qschmick).
 - **0.3.3** — the built-in Monaco IDE, and GitHub Copilot CLI as the first community-contributed
   engine ([@anxkhn](https://github.com/anxkhn)).
-- **0.3.2** — Realtime Michael: a voice channel to the GOD orchestrator.
+- **0.3.2** — Realtime Sekhon Manager: a voice channel to the GOD orchestrator.
 - **0.3.1** — three more engines: OpenCode, Crush, and pi.dev.
 
 Full history in the [CHANGELOG](https://github.com/chaitanyagiri/munder-difflin/blob/main/CHANGELOG.md).
@@ -263,7 +263,7 @@ This release carries community work. All 23 of these landed in v0.4.5:
 |---|---|---|
 | [#157](https://github.com/chaitanyagiri/munder-difflin/pull/157) | [@gpechieu](https://github.com/gpechieu) | inherited Claude Code session markers are stripped from an agent's PTY env |
 | [#158](https://github.com/chaitanyagiri/munder-difflin/pull/158) | [@gpechieu](https://github.com/gpechieu) | semantic memory works on Apple Silicon again: embeddings are pinned to CPU on macOS |
-| [#159](https://github.com/chaitanyagiri/munder-difflin/pull/159) | [@gpechieu](https://github.com/gpechieu) | reliable spawn, teardown and floor cards for the workers Michael hires |
+| [#159](https://github.com/chaitanyagiri/munder-difflin/pull/159) | [@gpechieu](https://github.com/gpechieu) | reliable spawn, teardown and floor cards for the workers Sekhon Manager hires |
 | [#165](https://github.com/chaitanyagiri/munder-difflin/pull/165) | [@rajpreetcodes](https://github.com/rajpreetcodes) | a `~` in the harness home folder resolves, so setup cannot die on ENOENT |
 | [#171](https://github.com/chaitanyagiri/munder-difflin/pull/171) | [@KrushanPatel](https://github.com/KrushanPatel) | CONTRIBUTING.md matches the platforms the app actually supports |
 | [#175](https://github.com/chaitanyagiri/munder-difflin/pull/175) | [@rekcilyssup](https://github.com/rekcilyssup) | a main-process watchdog wakes an idle worker sitting on an undrained inbox |
@@ -281,7 +281,7 @@ This release carries community work. All 23 of these landed in v0.4.5:
 | [#203](https://github.com/chaitanyagiri/munder-difflin/pull/203) | [@lifelmy](https://github.com/lifelmy) | the Crush config env points at the agent's own directory |
 | [#210](https://github.com/chaitanyagiri/munder-difflin/pull/210) | [@chaitanyagiri](https://github.com/chaitanyagiri) | the art licence claims are true again, Modern Interiors is bought |
 | [#214](https://github.com/chaitanyagiri/munder-difflin/pull/214) | [@pontusm](https://github.com/pontusm) | Windows agent processes quit when the app does |
-| [#219](https://github.com/chaitanyagiri/munder-difflin/pull/219) | [@chaitanyagiri](https://github.com/chaitanyagiri) | engine availability is checked before Michael's engine is committed |
+| [#219](https://github.com/chaitanyagiri/munder-difflin/pull/219) | [@chaitanyagiri](https://github.com/chaitanyagiri) | engine availability is checked before Sekhon Manager's engine is committed |
 | [#226](https://github.com/chaitanyagiri/munder-difflin/pull/226) | [@chaitanyagiri](https://github.com/chaitanyagiri) | the floor reports lifetime spend, not spend since the last app restart |
 | [#227](https://github.com/chaitanyagiri/munder-difflin/pull/227) | [@scy73](https://github.com/scy73) | the renderer runs inside Chromium's sandbox |
 
@@ -297,18 +297,18 @@ Apple Silicon and Intel.
 ### 🍎 macOS
 | Build | File |
 |---|---|
-| Universal (Apple Silicon + Intel) | [`Munder-Difflin-0.4.6-mac-universal.dmg`](https://github.com/chaitanyagiri/munder-difflin/releases/latest/download/Munder-Difflin-0.4.6-mac-universal.dmg) |
+| Universal (Apple Silicon + Intel) | [`Sekhon AI Office-Difflin-0.4.6-mac-universal.dmg`](https://github.com/chaitanyagiri/munder-difflin/releases/latest/download/Sekhon AI Office-Difflin-0.4.6-mac-universal.dmg) |
 
 ### 🪟 Windows
 | Build | File |
 |---|---|
-| Installer (x64), *recommended* | [`Munder-Difflin-0.4.6-win-x64-setup.exe`](https://github.com/chaitanyagiri/munder-difflin/releases/latest/download/Munder-Difflin-0.4.6-win-x64-setup.exe) |
-| Portable (x64, no install) | [`Munder-Difflin-0.4.6-win-x64-portable.exe`](https://github.com/chaitanyagiri/munder-difflin/releases/latest/download/Munder-Difflin-0.4.6-win-x64-portable.exe) |
+| Installer (x64), *recommended* | [`Sekhon AI Office-Difflin-0.4.6-win-x64-setup.exe`](https://github.com/chaitanyagiri/munder-difflin/releases/latest/download/Sekhon AI Office-Difflin-0.4.6-win-x64-setup.exe) |
+| Portable (x64, no install) | [`Sekhon AI Office-Difflin-0.4.6-win-x64-portable.exe`](https://github.com/chaitanyagiri/munder-difflin/releases/latest/download/Sekhon AI Office-Difflin-0.4.6-win-x64-portable.exe) |
 
 ### 🐧 Linux
 | Build | File |
 |---|---|
-| AppImage (x86_64) | [`Munder-Difflin-0.4.6-linux-x86_64.AppImage`](https://github.com/chaitanyagiri/munder-difflin/releases/latest/download/Munder-Difflin-0.4.6-linux-x86_64.AppImage) |
+| AppImage (x86_64) | [`Sekhon AI Office-Difflin-0.4.6-linux-x86_64.AppImage`](https://github.com/chaitanyagiri/munder-difflin/releases/latest/download/Sekhon AI Office-Difflin-0.4.6-linux-x86_64.AppImage) |
 
 ### 📦 Source
 [Source code (zip)](https://github.com/chaitanyagiri/munder-difflin/archive/refs/tags/v0.4.6.zip) ·
@@ -333,15 +333,15 @@ Apple Silicon and Intel.
   to the app's stable signature.
 - **Windows** — not code-signed yet; SmartScreen may show "Windows protected your PC" →
   **More info** → **Run anyway**.
-- **Linux** — make the AppImage executable: `chmod +x Munder-Difflin-*.AppImage`, then run it.
+- **Linux** — make the AppImage executable: `chmod +x Sekhon AI Office-Difflin-*.AppImage`, then run it.
 
 ---
 
 ## Requirements
 - macOS 12+, Windows 10/11, or a modern Linux desktop
 - [Claude Code](https://claude.com/claude-code) installed and on your `PATH` (and/or the Antigravity `agy` or OpenAI `codex` CLI for those providers)
-- A Claude Code subscription (Munder Difflin drives your existing `claude` CLI — it doesn't replace it)
-- For **Realtime Michael** (voice): your own **OpenAI key with Realtime API access** — without it the **Talk** button stays disabled
+- A Claude Code subscription (Sekhon AI Office drives your existing `claude` CLI — it doesn't replace it)
+- For **Realtime Sekhon Manager** (voice): your own **OpenAI key with Realtime API access** — without it the **Talk** button stays disabled
 
 ---
 
@@ -359,8 +359,8 @@ To produce installers yourself: `npm run dist` (current OS), or `dist:mac` / `di
 
 ## What's inside
 - **The simulation** — every agent is a real `claude` (or `agy` / `codex` / local-provider) pseudo-terminal, visualized as an avatar on a watchable office floor (`node-pty` · `xterm.js` · Pixi.js).
-- **Talk to Michael** — a realtime **voice channel to the GOD orchestrator** that reads the hive and acts behind spoken echo-back confirmation, BYOK and main-only.
-- **Selectable engines + per-hire capabilities** — each hire (and Michael himself) runs on a pluggable engine, with its own consented skills + MCP catalog.
+- **Talk to Sekhon Manager** — a realtime **voice channel to the GOD orchestrator** that reads the hive and acts behind spoken echo-back confirmation, BYOK and main-only.
+- **Selectable engines + per-hire capabilities** — each hire (and Sekhon Manager himself) runs on a pluggable engine, with its own consented skills + MCP catalog.
 - **MemPalace** — a markdown-first, semantic memory layer the whole office shares; cross-session recall in ~12ms.
 - **GOD orchestrator + hive** — one agent you talk to routes work to specialists and stays autonomous, escalating only critical items (spend, destructive ops, scope) to you natively, through human-in-the-loop prompts. It can also spawn an ephemeral worker straight from Slack and tear it down safely.
 - **Plugs into your setup** — your subscription, settings, skills, and MCP servers, plus an integrations registry with a write-only secret broker; `/remote-control` reaches the whole floor from your phone.

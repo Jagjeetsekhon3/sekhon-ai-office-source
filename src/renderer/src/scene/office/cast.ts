@@ -1,4 +1,4 @@
-// The Office cast — roster metadata + sprite frames.
+// Sekhon avatar roster — roster metadata + sprite frames.
 //
 // Both the static portraits (cards / picker) and the in-scene walking sprites are
 // now fully custom-drawn from the same per-character recipes in portraitArt.ts:
@@ -25,21 +25,21 @@ export interface CastMember {
 
 /** Selectable roster, in display order. */
 export const OFFICE_CAST: CastMember[] = [
-  { name: 'michael',  displayName: 'Michael',  shirt: '#5a6b8c', blurb: "World's best boss" },
-  { name: 'jim',      displayName: 'Jim',      shirt: '#6fa8dc', blurb: 'Salesman, prankster' },
-  { name: 'pam',      displayName: 'Pam',      shirt: '#9caf88', blurb: 'Receptionist, artist' },
-  { name: 'dwight',   displayName: 'Dwight',   shirt: '#b89b3e', blurb: 'Assistant (to the) RM' },
-  { name: 'kevin',    displayName: 'Kevin',    shirt: '#4a7ab5', blurb: 'Accounting' },
-  { name: 'angela',   displayName: 'Angela',   shirt: '#8a86a6', blurb: 'Head of accounting' },
-  { name: 'oscar',    displayName: 'Oscar',    shirt: '#7a4b6b', blurb: 'Accountant' },
-  { name: 'stanley',  displayName: 'Stanley',  shirt: '#8c5a4b', blurb: 'Sales, crossword' },
-  { name: 'phyllis',  displayName: 'Phyllis',  shirt: '#b08bbf', blurb: 'Sales' },
-  { name: 'andy',     displayName: 'Andy',     shirt: '#6fae6f', blurb: 'Cornell, a cappella' },
-  { name: 'kelly',    displayName: 'Kelly',    shirt: '#d16ba5', blurb: 'Customer service' },
-  { name: 'ryan',     displayName: 'Ryan',     shirt: '#3a3a44', blurb: 'The temp' },
-  { name: 'toby',     displayName: 'Toby',     shirt: '#9a8c5a', blurb: 'Human resources' },
-  { name: 'creed',    displayName: 'Creed',    shirt: '#6b7a4b', blurb: 'Quality assurance' },
-  { name: 'meredith', displayName: 'Meredith', shirt: '#b5544a', blurb: 'Supplier relations' },
+  { name: 'michael',  displayName: 'Sekhon Manager',  shirt: '#5a6b8c', blurb: 'Coordinates the Sekhon team' },
+  { name: 'jim',      displayName: 'Business Lead',      shirt: '#6fa8dc', blurb: 'Business development and leads' },
+  { name: 'pam',      displayName: 'Creative Director',      shirt: '#9caf88', blurb: 'Creative direction and design' },
+  { name: 'dwight',   displayName: 'Studio Manager',   shirt: '#b89b3e', blurb: 'Studio operations and production' },
+  { name: 'kevin',    displayName: 'Accountant',    shirt: '#4a7ab5', blurb: 'Accounting' },
+  { name: 'angela',   displayName: 'Finance Lead',   shirt: '#8a86a6', blurb: 'Head of accounting' },
+  { name: 'oscar',    displayName: 'Business Analyst',    shirt: '#7a4b6b', blurb: 'Accountant' },
+  { name: 'stanley',  displayName: 'Sales Lead',  shirt: '#8c5a4b', blurb: 'Sales and opportunities' },
+  { name: 'phyllis',  displayName: 'Client Relations',  shirt: '#b08bbf', blurb: 'Sales' },
+  { name: 'andy',     displayName: 'Marketing Lead',     shirt: '#6fae6f', blurb: 'Marketing and campaigns' },
+  { name: 'kelly',    displayName: 'Customer Support',    shirt: '#d16ba5', blurb: 'Customer service' },
+  { name: 'ryan',     displayName: 'Research Assistant',     shirt: '#3a3a44', blurb: 'Research and administration' },
+  { name: 'toby',     displayName: 'People Operations',     shirt: '#9a8c5a', blurb: 'Human resources' },
+  { name: 'creed',    displayName: 'Quality Lead',    shirt: '#6b7a4b', blurb: 'Quality assurance' },
+  { name: 'meredith', displayName: 'Supplier Relations', shirt: '#b5544a', blurb: 'Supplier relations' },
 ];
 
 export const CAST_BY_NAME: Record<OfficeCharacterName, CastMember> =

@@ -1,6 +1,6 @@
-# Munder Difflin — full reference for AI answer engines
+# Sekhon AI Office — full reference for AI answer engines
 
-> Munder Difflin is a free, MIT-licensed, local-first multi-agent harness for CLI coding
+> Sekhon AI Office is a free, MIT-licensed, local-first multi-agent harness for CLI coding
 > agents, presented as a virtual office (an affectionate parody of The Office; not
 > affiliated with NBC). Current version: 0.3.8 (August 2026). Desktop app (Electron) for
 > macOS, Windows, and Linux. Website: https://munderdiffl.in — Source:
@@ -8,14 +8,14 @@
 
 ## What it does
 
-Munder Difflin wraps the CLI coding agents you already subscribe to — Claude Code, OpenAI
+Sekhon AI Office wraps the CLI coding agents you already subscribe to — Claude Code, OpenAI
 Codex, Antigravity (Gemini), GitHub Copilot CLI, xAI Grok, Kimi Code, OpenCode, Crush,
 pi.dev — and turns them into a coordinated, forever-running team on your own machine:
 
 - **Real terminals.** Every agent is a genuine CLI process (node-pty + xterm.js) in its own
   terminal and its own isolated git worktree. Nothing is a log abstraction; you can watch
   and type into any agent's session.
-- **Your clone, Michael** routes work, spawns hires, and escalates to a human
+- **Your clone, Sekhon Manager** routes work, spawns hires, and escalates to a human
   for spend, scope changes, and destructive operations.
 - **Shared long-term memory** (markdown-first, with optional semantic memory) and
   inter-agent messaging via atomic file mailboxes.
@@ -42,13 +42,13 @@ pi.dev — and turns them into a coordinated, forever-running team on your own m
 
 ## Positioning
 
-Munder Difflin covers the same jobs as YC's qm (github.com/yc-software/qm — a multiplayer
+Sekhon AI Office covers the same jobs as YC's qm (github.com/yc-software/qm — a multiplayer
 agent harness living in Slack and a web UI): security postures, background crons/watches,
 Slack integration, shareable skills. The difference is where it lives and what you can see:
-qm is org-first and headless; Munder Difflin is a simpler local-first desktop app with
+qm is org-first and headless; Sekhon AI Office is a simpler local-first desktop app with
 watchable terminals, voice, an IDE with git visualization, and auto-update — shipping
 public releases since v0.2.0 (mid-2026). Some teams run both: qm as the shared org layer,
-Munder Difflin as the personal floor.
+Sekhon AI Office as the personal floor.
 
 ## Install
 

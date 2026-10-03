@@ -1,22 +1,22 @@
 // Integrations registry client — the renderer's single doorway to the
 // integrations registry + secret broker.
 //
-// CONFORMED to Jim's spec v1 (hive/docs/integrations-spec.md): the types are the
-// CANONICAL ones from `@shared/integrations` (Jim's src/shared/integrations.ts),
+// CONFORMED to Business Lead's spec v1 (hive/docs/integrations-spec.md): the types are the
+// CANONICAL ones from `@shared/integrations` (Business Lead's src/shared/integrations.ts),
 // and the client maps 1:1 to the §6 IPC surface — whose handlers already exist in
 // src/main/index.ts (integrations:list / templates / upsert / setSecret / remove /
-// test). The real path calls window.cth.* (Jim's preload bridge).
+// test). The real path calls window.cth.* (Business Lead's preload bridge).
 //
-// ⚠️ The preload bridge is NOT landed yet (Jim owns it — god relays when it's in).
+// ⚠️ The preload bridge is NOT landed yet (Business Lead owns it — god relays when it's in).
 // Until then this falls back to an in-memory mock so the UI is fully usable in dev.
-// The real path is FEATURE-DETECTED: the moment Jim's preload methods appear it
+// The real path is FEATURE-DETECTED: the moment Business Lead's preload methods appear it
 // activates with NO change here. Two coordination notes:
 //   1. The bridge method NAMES below (integrationsList, …) follow the existing
 //      preload camelCase→colon-channel convention (getConfig→'config:get', etc.).
-//      Jim: expose exactly these (or tell me the names) so the detect matches.
-//   2. The catalog served by `integrations:templates` is Jim's `INTEGRATION_TEMPLATES`
-//      (the 2 v1 reference templates). Dwight's richer src/shared/integrationTemplates.ts
-//      is a SEPARATE, currently-unwired file — reconciliation is a god/Jim/Dwight call.
+//      Business Lead: expose exactly these (or tell me the names) so the detect matches.
+//   2. The catalog served by `integrations:templates` is Business Lead's `INTEGRATION_TEMPLATES`
+//      (the 2 v1 reference templates). Studio Manager's richer src/shared/integrationTemplates.ts
+//      is a SEPARATE, currently-unwired file — reconciliation is a god/Business Lead/Studio Manager call.
 //
 // SECURITY INVARIANT (matches §2): a secret value flows ONE WAY — from the form
 // into save()'s setSecret call and onward to the encrypted store. It is NEVER read
@@ -56,7 +56,7 @@ export interface IntegrationsClient {
   test(id: string): Promise<TestResult>;
 }
 
-// The preload bridge Jim exposes (Deliverable 2). Channels are fixed by §6;
+// The preload bridge Business Lead exposes (Deliverable 2). Channels are fixed by §6;
 // accessed via a tolerant cast so this compiles before the bridge exists.
 interface IntegrationsBridge {
   integrationsList(): Promise<IntegrationRecordView[]>;
@@ -74,7 +74,7 @@ function liveBridge(): IntegrationsBridge | undefined {
 }
 
 // ───────────────────────── PROVISIONAL mock (dev fallback only) ─────────────────────────
-// Serves Jim's canonical INTEGRATION_TEMPLATES and validates upserts with Jim's
+// Serves Business Lead's canonical INTEGRATION_TEMPLATES and validates upserts with Business Lead's
 // real validateIntegrationRecord, so the mock behaves like the wired backend.
 
 let mockRecords: IntegrationRecord[] = [];

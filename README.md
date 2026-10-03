@@ -2,7 +2,7 @@
 
 **A local-first AI team for running two real workflows: Sekhon Studio and a one-person freelance advertising agency.**
 
-Sekhon AI Office is a customized desktop multi-agent workspace built on the open-source Munder Difflin codebase. The goal is not to run a generic software office: it is to give one human owner a practical AI team that can find work, plan it, produce it, and help operate the business.
+Sekhon AI Office is a customized desktop multi-agent workspace built on an open-source desktop foundation. The goal is not to run a generic software office: it is to give one human owner a practical AI team that can find work, plan it, produce it, and help operate the business.
 
 ## Product direction
 
@@ -39,9 +39,9 @@ Important actions such as contacting a client, submitting a proposal, agreeing t
 
 ## Free and local-first
 
-Sekhon AI Office has **no Sekhon app subscription, seat fee or feature paywall during development**.
+Sekhon AI Office has **no Sekhon app subscription, seat fee or feature paywall**.
 
-AI usage is separate. Cloud model/API providers may charge for their own services. The app is also being developed toward first-class local-model workflows so compatible local inference can be used without a Sekhon AI Office subscription.
+AI usage is separate. Cloud model/API providers may charge for their own services. The app is also being developed toward first-class local-model workflows so compatible local inference can be used on your own machine.
 
 ## Current foundation
 
@@ -84,7 +84,7 @@ https://github.com/Jagjeetsekhon3/sekhon-ai-office-source
 
 ## License and upstream attribution
 
-The source code is distributed under the MIT License. This project is derived from **Munder Difflin** by Chaitanya Giri; the original copyright and MIT license notice are retained in `LICENSE`.
+The source code is distributed under the MIT License. Original copyright and MIT license notices are retained in `LICENSE`.
 
 Bundled pixel-art assets under `src/renderer/src/assets/` are **not covered by the MIT source-code license**. They include LimeZu Modern Interiors assets under a separate license that requires credit. See `LICENSE-ASSETS` and `src/renderer/src/assets/ATTRIBUTION.md`.
 
@@ -94,7 +94,7 @@ As Sekhon AI Office develops its own visual identity, third-party artwork should
 
 Active development. Current priorities are:
 
-1. finish Sekhon branding and remove inherited purchase/PRO surfaces;
+1. Sekhon branding cleanup is implemented; validate the installed app before release;
 2. verify and improve API-provider/local-model configuration;
 3. build the two Sekhon workspaces and their default agent teams;
 4. add the Advertising Agency Business Lead and leads workflow;

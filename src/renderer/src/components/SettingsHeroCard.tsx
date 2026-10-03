@@ -93,7 +93,7 @@ export function SettingsHeroCard() {
           }}>
             Run agents on your own machine using your own API keys,
             and local models. Sekhon AI Office has no paid app plan, seat fee, or
-            feature paywall during development.
+            feature paywall.
           </div>
         </div>
 

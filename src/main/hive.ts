@@ -42,6 +42,7 @@ import { selectBroadcastTargets } from '../shared/broadcast';
 import { preferredAgentRole } from '../shared/agentRole';
 import { mergeTaskLedger } from '../shared/taskLedger';
 import { expandTilde } from './fs';
+import { migrateSekhonAgent } from '../shared/sekhonIdentity';
 import { resolveGodName } from '../shared/godIdentity';
 
 /** The subset of HarnessConfig the hive consumes for the default-MCP merge.
@@ -152,7 +153,7 @@ export interface AgentMeta {
   capabilities?: string[];
   cwd: string;
   isGod?: boolean;
-  /** Michael's prep assistant — enriches prompts and forwards them to Michael.
+  /** Sekhon Manager's prep assistant — enriches prompts and forwards them to Sekhon Manager.
    *  Send-only: excluded from broadcast fan-out so it never drains an inbox. */
   isAssistant?: boolean;
 }
@@ -164,7 +165,7 @@ export interface RegistryAgent extends AgentMeta {
    *  (not deleted) so its history/memory survive; only agents with a live PTY
    *  are 'active'. Broadcast fan-out + roster reads skip archived agents. */
   archived?: boolean;
-  /** The human has this agent 1:1 and Michael must leave it alone until they
+  /** The human has this agent 1:1 and Sekhon Manager must leave it alone until they
    *  flip it back. Held agents stay ACTIVE and keep their terminal — this is
    *  "do not dispatch to them", not "they are gone", which is why it is its own
    *  flag rather than a reuse of `archived` or a breaker level. */
@@ -727,7 +728,7 @@ export class HiveManager {
       mcpDefaults?: { [id: string]: { enabled: boolean } };
       /** App-resources `skills/` source dir (W3). The bundled read-only skills are
        *  copied into the agent's `.claude/skills/` per spawn; undefined or missing
-       *  is a no-op (tolerated until Kevin populates the resource dir). */
+       *  is a no-op (tolerated until Accountant populates the resource dir). */
       skillsDir?: string;
       /** Extra directories the agent's sandbox may write (e.g. the shared
        *  MemPalace dir, which `mempalace` mutates). Absolute paths; ignored
@@ -738,6 +739,7 @@ export class HiveManager {
       autoMode?: boolean;
     } = {}
   ): Promise<SpawnInjection> {
+    meta = migrateSekhonAgent(meta);
     const root = this.root();
     if (!root) return { args: [], env: {} };
     this.ensureHive();
@@ -761,7 +763,7 @@ export class HiveManager {
     // W3 — bundled read-only skills: refresh the agent's .claude/skills/ from the
     // app-resources skills/ dir on every spawn (same policy as identity.md), so an
     // agent always rides with the shipped safe skill set. Tolerant: a missing or
-    // partial source dir is a no-op (Kevin populates the resource dir in lp-manifest).
+    // partial source dir is a no-op (Accountant populates the resource dir in lp-manifest).
     if (opts.skillsDir) this.copyBundledSkills(opts.skillsDir, join(dir, '.claude', 'skills'));
 
     const memory = join(dir, 'memory.md');
@@ -904,7 +906,7 @@ export class HiveManager {
               // global ~/.pi is never touched) that posts cth-hook-shaped payloads to
               // HIVE_SOCK on tool_call/agent_end and auto-approves tools when the floor
               // is in auto mode. HIVE_AUTO_APPROVE (set in spawnAgentCore from
-              // config.autoMode) gates the auto-allow — Pam guardrail #5.
+              // config.autoMode) gates the auto-allow — Creative Director guardrail #5.
               // LIVE-UNVERIFIED: the exact extension API surface needs BYOK keys to
               // prove; the renderer idle inbox-wake nudge is the guaranteed drain.
               env.PI_CODING_AGENT_DIR = this.installPiHooks(dir);
@@ -1133,7 +1135,7 @@ export class HiveManager {
    * the new name immediately rather than waiting for the periodic fleet refresh.
    */
   /**
-   * Put an agent on hold, or take it off, and tell Michael immediately.
+   * Put an agent on hold, or take it off, and tell Sekhon Manager immediately.
    *
    * `fleet.json` is patched in the same operation for the same reason
    * `renameAgent` does it: god's roster is injected from that file on its next
@@ -1356,7 +1358,7 @@ export class HiveManager {
    * W3 — refresh an agent's bundled skills from the app-resources `skills/` dir.
    * Mirrors `identity.md`: overwritten every spawn so the shipped safe set tracks
    * the app. Best-effort and fully tolerant — a missing/empty source dir is a no-op
-   * (Kevin populates the resource dir in lp-manifest), and any IO error is swallowed
+   * (Accountant populates the resource dir in lp-manifest), and any IO error is swallowed
    * so skill provisioning can never block a spawn.
    */
   private copyBundledSkills(srcDir: string, destDir: string): void {
@@ -1595,7 +1597,7 @@ export class HiveManager {
       ? `SPAWNING A WORKER: you can start an ephemeral worker yourself by writing ONE JSON file into ${inRoot('spawn-requests')}/<id>.json. Required: \`objective\` (what the worker must do) and \`cwd\` (the repo it runs in). Optional: \`name\`, \`command\` (overrides the provider default), \`provider\` (selects its default CLI when command is omitted), \`model\`, \`isolate\` (default true = its own git worktree), \`tokenCap\`, and \`slack\` ({channel, thread_ts}) to route its failures back to a thread. The harness polls that directory, spawns \`worker-<id>\`, and moves the request to \`spawn-requests/.done/\` on success or \`.failed/\` with a reason. This is the ONLY way you can spawn; a hire manifest under research/hires/ needs the human to confirm it in the UI, so it is not a route you can complete on your own. Reuse an existing agent first, as above — a worker is a fresh spend every time.`
       : '';
     const godLine = meta.isGod
-      ? 'You are the GOD / ORCHESTRATOR of this hive — your job is to ORCHESTRATE, not to implement: maintain live situational awareness and delegate the work. (1) AWARENESS — always know what is going on: keep an accurate picture of every agent (active vs archived/idle), the task board, and all in-flight work; drain your inbox continually and triage every other agent\'s requests, answering clarifications so the team runs autonomously. (2) DELEGATE — decompose work and fan it out to the hive agents via their inboxes (route messages and assign owners; do not do their jobs); do NOT take on grunt implementation yourself. Stay aware of who is already on the floor and delegate OPPORTUNISTICALLY: BEFORE you spawn anything, CHECK THE LIVE ROSTER (active agents in registry.json + their state in fleet.json) and prefer routing to an EXISTING agent that fits — above all when the request names one ("ask Pam to…", "have Jim…"), route to that agent instead of reflexively creating a new one. Reuse an idle or already-running agent whose role matches; only spawn a fresh agent when no existing one is a sensible fit, and say that you checked. One capable owner beats a duplicate. (3) OWN ONLY THE IMPORTANT, high-leverage things — task decomposition, dispatch decisions, sign-offs, conflict resolution, branch integration, and final QA — and remain the sole scribe of board.md. You are otherwise fully autonomous — there is NO separate approval queue. For the genuinely critical (destructive actions, spending real money, scope changes, unresolvable conflicts), ask the human directly in your own session and let the tool-permission prompt gate the action; the human approves natively, including remotely from their phone via /remote-control. Keep the team unblocked. When you DISPATCH a task, write it as a 4-part contract so the agent can run autonomously: (1) OBJECTIVE — the concrete goal; (2) OUTPUT — the expected deliverable/format; (3) TOOLS — what to use or avoid, and any references to read instead of re-deriving; (4) BOUNDARIES — scope limits + the definition of done. Pass references (file paths, message ids, board sections), not pasted content — keep dispatches short.'
+      ? 'You are the GOD / ORCHESTRATOR of this hive — your job is to ORCHESTRATE, not to implement: maintain live situational awareness and delegate the work. (1) AWARENESS — always know what is going on: keep an accurate picture of every agent (active vs archived/idle), the task board, and all in-flight work; drain your inbox continually and triage every other agent\'s requests, answering clarifications so the team runs autonomously. (2) DELEGATE — decompose work and fan it out to the hive agents via their inboxes (route messages and assign owners; do not do their jobs); do NOT take on grunt implementation yourself. Stay aware of who is already on the floor and delegate OPPORTUNISTICALLY: BEFORE you spawn anything, CHECK THE LIVE ROSTER (active agents in registry.json + their state in fleet.json) and prefer routing to an EXISTING agent that fits — above all when the request names one ("ask Creative Director to…", "have Business Lead…"), route to that agent instead of reflexively creating a new one. Reuse an idle or already-running agent whose role matches; only spawn a fresh agent when no existing one is a sensible fit, and say that you checked. One capable owner beats a duplicate. (3) OWN ONLY THE IMPORTANT, high-leverage things — task decomposition, dispatch decisions, sign-offs, conflict resolution, branch integration, and final QA — and remain the sole scribe of board.md. You are otherwise fully autonomous — there is NO separate approval queue. For the genuinely critical (destructive actions, spending real money, scope changes, unresolvable conflicts), ask the human directly in your own session and let the tool-permission prompt gate the action; the human approves natively, including remotely from their phone via /remote-control. Keep the team unblocked. When you DISPATCH a task, write it as a 4-part contract so the agent can run autonomously: (1) OBJECTIVE — the concrete goal; (2) OUTPUT — the expected deliverable/format; (3) TOOLS — what to use or avoid, and any references to read instead of re-deriving; (4) BOUNDARIES — scope limits + the definition of done. Pass references (file paths, message ids, board sections), not pasted content — keep dispatches short.'
         + ` MONITOR the floor by reading ${inRoot('fleet.json')} (live per-agent tokens, cost, status, last tool, breaker level, inbox backlog) and ${inRoot('registry.json')} — note that running 'claude agents' will NOT list your hive's sibling agents. A full Claude Code command reference is at ${inRoot('COMMANDS.md')} (slash commands act ONLY on your own session; CLI commands run in your shell and can target the fleet). You periodically receive scheduler / "Heartbeat" standup requests — on each, review every agent via fleet.json, re-engage anyone stalled, over-budget, or breaker-armed, and keep board.md and tasks.json accurate. In tasks.json, ALWAYS set each task's "assignee" to the worker's agent id the moment you dispatch it, and NEVER clear it on status changes — a done card must still say who did the work (the human reads the board by who-did-what). HUMAN FEEDBACK is first-class in the ledger: when a task can only proceed with the human's input — a QUESTION to answer OR an ACTION only the human can perform (create an account, approve a purchase, provide credentials/screenshots, test on their device) — set its status to "blocked" and append the concrete ask to the card's "humanQA" array (push {"q":"...","askedAt":"<iso>"}; phrase actions as clear to-dos; keep every past entry — the history documents the card's decisions). WRITE THE ASK SHORT AND IN MARKDOWN. The human reads it on a CARD, not in a terminal, so an ask longer than a short paragraph plus its options (roughly 700 characters) is a report, not a question — cut the narrative, keep the decision. Open with ONE **bold** sentence saying exactly what you need from them; put paths, commands, values and identifiers in \`backticks\`; give each option or step its own "-" bullet or "1." number; leave a blank line between paragraphs (a single newline is a line break, so each option stays on its own line). When the ask originates in another agent's report, REWRITE it into that shape — never paste the report body in as the question, and never make the human read the investigation to find the decision. The harness surfaces open questions on the office floor's ASK ME board; the human's answer lands in the same entry ("a") AND arrives as an inbox message to you — read it, act on it, and unblock the card so work continues. Do NOT park human questions in separate files (no HumanQuestion.md) and never sit waiting on the human in your own session. Steward the token budget.`
       : meta.isAssistant
       ? `You are ${godNameForPrompt}'s PREP ASSISTANT. You will be handed short, possibly vague instructions (each begins with "ENRICH TASK:"). For each one: (1) figure out which project it concerns and cd into the most relevant repo — you start in ${godNameForPrompt}'s home directory; (2) gather concrete context READ-ONLY (exact file paths, current state, relevant code, conventions, active branch, gotchas) — NEVER modify, create, or delete files; (3) rewrite the instruction into ONE clear, self-contained prompt that ${godNameForPrompt} can execute autonomously, preserving the user's original intent without inventing scope. Then deliver it: write ONE message JSON into your outbox with "to":"god", "act":"request", a short subject, and the finished prompt as the body. Do NOT perform the task yourself — your only output is the improved prompt sent to ${godNameForPrompt}.`
@@ -1909,7 +1911,11 @@ export class HiveManager {
   registry(): Registry {
     const root = this.root();
     if (!root) return { godId: null, agents: {} };
-    return this.readJson<Registry>(join(root, 'registry.json'), { godId: null, agents: {} });
+    const registry = this.readJson<Registry>(join(root, 'registry.json'), { godId: null, agents: {} });
+    for (const [id, agent] of Object.entries(registry.agents)) {
+      registry.agents[id] = migrateSekhonAgent(agent);
+    }
+    return registry;
   }
   board(): string {
     const root = this.root();
@@ -2499,8 +2505,8 @@ export class HiveManager {
       // drains via the renderer nudge + the pty-quiescence idle fallback). For the
       // default god (openai-wire) and a local OpenAI-compatible endpoint this routes
       // through the proxy cleanly. Cross-provider Crush-via-proxy is on-device
-      // live-verify (Dwight verify-crush MF1; the default god model is openai-wire to
-      // match). Literal loopback (Dwight's b1 — no ${VAR} expansion edge cases);
+      // live-verify (Studio Manager verify-crush MF1; the default god model is openai-wire to
+      // match). Literal loopback (Studio Manager's b1 — no ${VAR} expansion edge cases);
       // Crush merges config so only base_url is rewritten.
       const wireProvider = api === 'anthropic' ? 'anthropic' : 'openai';
       const providers: Record<string, { base_url: string }> = { [wireProvider]: { base_url: loopbackUrl } };
@@ -2558,7 +2564,7 @@ export class HiveManager {
     } catch (e) { console.error('[hive] installGrokHooks failed:', e); }
   }
 
-  /** Write the live fleet snapshot Michael reads (`fleet.json`, gitignored).
+  /** Write the live fleet snapshot Sekhon Manager reads (`fleet.json`, gitignored).
    *  Best-effort — called from a timer, must never throw. */
   writeFleetSnapshot(snapshot: unknown): void {
     const root = this.root();
@@ -2695,7 +2701,7 @@ export class HiveManager {
    * `{kind:'archive', agentId, archived:true}` and NOTHING else — no exit code,
    * no signal, no output. A two-second SIGILL death and a completed agent were
    * indistinguishable in the only record the hive keeps, and the crash banner
-   * lived solely in a UI terminal pane. Observed live 2026-08-24: Michael's
+   * lived solely in a UI terminal pane. Observed live 2026-08-24: Sekhon Manager's
    * `claude` CLI panicked 923ms into startup and left no trace on disk.
    *
    * Split by design:
@@ -2769,7 +2775,7 @@ export class HiveManager {
   /**
    * Append one cost sample to the durable, append-only ledger at
    * `<root>/cost-ledger.jsonl` (Lane A #6.6d). This is the SOLE durable cost
-   * store; its row is exactly the shape Kevin (#4) reserves for the cost_ledger
+   * store; its row is exactly the shape Accountant (#4) reserves for the cost_ledger
    * SQLite table, so migration is a mechanical INSERT…SELECT.
    *
    * 🔒 PII: persist ONLY the allowlisted AgentUsageSample — NEVER a raw OTel
@@ -2785,7 +2791,7 @@ export class HiveManager {
   appendCostLedger(sample: AgentUsageSample): void {
     const root = this.root();
     if (!root) return;
-    // Fully snake_case so the row maps 1:1 onto Kevin's (#4) cost_ledger SQLite
+    // Fully snake_case so the row maps 1:1 onto Accountant's (#4) cost_ledger SQLite
     // columns (agent_id, session_id, ts, input, output, cache_read,
     // cache_creation, model, usd) — migration is a straight INSERT…SELECT.
     const row = {
@@ -3237,7 +3243,7 @@ process.stdin.on('end', () => {
 // A bundled extension for Pi (earendil-works). Pi exposes a pi.on(event,…)
 // lifecycle; this posts cth-hook-shaped payloads to HIVE_SOCK on tool_call /
 // tool_result / agent_end and AUTO-APPROVES tool calls when the floor is in auto
-// mode (HIVE_AUTO_APPROVE, gated by config.autoMode — Pam guardrail #5). The
+// mode (HIVE_AUTO_APPROVE, gated by config.autoMode — Creative Director guardrail #5). The
 // agent_end→Stop keeps the harness status in step (→ idle) so the renderer idle
 // inbox-wake nudge can deliver mail. Fully wrapped so a wrong API guess can never
 // break the spawn. LIVE-UNVERIFIED (Pi's exact extension surface needs BYOK keys).
@@ -3611,7 +3617,7 @@ process.stdin.on('end', () => {
 // payload is camelCase and uses snake_case event values. Normalize the input for
 // HookServer and translate its Claude-style permission denial into Grok's direct
 // decision form. Scoped by AGENT_ID so the trusted global hook is inert outside
-// Munder-spawned workers.
+// Sekhon AI Office-spawned workers.
 const GROK_HOOK_SHIM = `#!/usr/bin/env node
 'use strict';
 const net = require('net');

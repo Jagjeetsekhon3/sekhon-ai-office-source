@@ -1,15 +1,15 @@
 /**
- * Realtime Michael — completion watcher (card rt-12, Phase 2, "respond when done").
+ * Realtime Sekhon Manager — completion watcher (card rt-12, Phase 2, "respond when done").
  *
- * When voice-Michael DISPATCHES work (fire-and-notify, the default pattern), he does
+ * When voice-Sekhon Manager DISPATCHES work (fire-and-notify, the default pattern), he does
  * NOT block on it. This module is the main-process engine that watches each dispatched
  * task for completion and EMITS a completion event so the rest of the realtime stack can
- * make Michael speak it unprompted ("Oscar finished — want details?").
+ * make Sekhon Manager speak it unprompted ("Business Analyst finished — want details?").
  *
- * OWNERSHIP / SEAM (rt-12 split, god-ruled 2026-06-25): this module is OWNED by Jim and
- * is deliberately DISJOINT from Kevin's realtime CORE files. It NEVER imports session.ts
+ * OWNERSHIP / SEAM (rt-12 split, god-ruled 2026-06-25): this module is OWNED by Business Lead and
+ * is deliberately DISJOINT from Accountant's realtime CORE files. It NEVER imports session.ts
  * / the live RealtimeSession / electron — it only takes injected readers + a clock and
- * EMITS via callbacks. Kevin's side subscribes `onCompletion(...)` and pushes the event
+ * EMITS via callbacks. Accountant's side subscribes `onCompletion(...)` and pushes the event
  * down the new main→renderer channel (preload binding + session.ts injection), calls
  * `track(...)` from the dispatch action, flips `setSessionLive(...)` on connect/disconnect,
  * and `drainQueuedCompletions()` at warm-start. Keeping this file electron-free + reader-
@@ -22,7 +22,7 @@
  * Branch feat/realtime-michael. See board.md "🎙 REALTIME MICHAEL".
  */
 
-/** A unit of work voice-Michael dispatched and is now awaiting completion of. */
+/** A unit of work voice-Sekhon Manager dispatched and is now awaiting completion of. */
 export interface PendingDispatch {
   /** Stable id for this dispatch (the watcher key). e.g. the dispatch message id. */
   correlationId: string;
@@ -82,9 +82,9 @@ export interface CompletionResult {
 
 /**
  * The completion object the watcher emits via `onCompletion` AND returns from
- * `drainQueuedCompletions()` — the SAME shape (rt-12 contract lock with Kevin). Kevin
+ * `drainQueuedCompletions()` — the SAME shape (rt-12 contract lock with Accountant). Accountant
  * forwards it verbatim over the main→renderer push channel and into warm-start, so every
- * field here reaches Michael. `summary` is the human-speakable line; `completedAt` is
+ * field here reaches Sekhon Manager. `summary` is the human-speakable line; `completedAt` is
  * epoch-ms. The trailing fields are extra context (safe to ignore on the wire).
  */
 export interface RealtimeCompletion {
@@ -92,7 +92,7 @@ export interface RealtimeCompletion {
   kind: PendingDispatch['kind'];
   targetAgentId: string;
   taskId?: string;
-  /** Human-speakable line, e.g. "Oscar finished the cost guard." */
+  /** Human-speakable line, e.g. "Business Analyst finished the cost guard." */
   summary: string;
   /** Epoch-ms the completion was observed. */
   completedAt: number;
@@ -136,8 +136,8 @@ const INJECTION_PATTERNS: RegExp[] = [
 /**
  * N3 defense-in-depth: the spoken summary embeds `objective`, which comes from a
  * possibly-crafted task. Strip control chars, neutralize prompt-injection lead-ins, collapse
- * whitespace, and cap length so a malicious objective can't steer what Michael says or does.
- * (Kevin also neutralizes at the session.ts injection seam — this is the watcher-half belt.)
+ * whitespace, and cap length so a malicious objective can't steer what Sekhon Manager says or does.
+ * (Accountant also neutralizes at the session.ts injection seam — this is the watcher-half belt.)
  */
 function neutralizeForVoice(text: string): string {
   let out = text.replace(/[\u0000-\u001f\u007f]+/g, ' ');
@@ -163,7 +163,7 @@ function isSystemSender(from: string | undefined): boolean {
 }
 
 function speakableName(agentId: string): string {
-  // "oscar-mqpbr18v" → "Oscar". Falls back to the raw id if it has no name segment.
+  // "oscar-mqpbr18v" → "Business Analyst". Falls back to the raw id if it has no name segment.
   const head = agentId.split('-')[0] ?? agentId;
   return head ? head.charAt(0).toUpperCase() + head.slice(1) : agentId;
 }
@@ -232,7 +232,7 @@ interface Waiter {
  * The completion watcher. Construct once (in index.ts), `start()` it, `track()` each voice
  * dispatch, and `onCompletion()` to receive events. It polls the injected readers, runs the
  * pure detector, and routes results: emit when a session is live, else queue (+ notify) for
- * warm-start. It owns NO realtime/session/electron state — Kevin's core wires the emit to
+ * warm-start. It owns NO realtime/session/electron state — Accountant's core wires the emit to
  * the main→renderer push channel.
  */
 export class RealtimeCompletionWatcher {
@@ -430,7 +430,7 @@ function safeRead<T>(reader: () => T[]): T[] {
   }
 }
 
-// --- shared singleton (rt-12 contract lock with Kevin) ------------------------------------
+// --- shared singleton (rt-12 contract lock with Accountant) ------------------------------------
 // ONE watcher instance across the whole main process: one pending map, one queue. index.ts
 // initializes it with the real hive-backed readers; realtimeActions.ts (and any other core
 // caller) get that SAME instance via getCompletionWatcher(). This avoids a per-call watcher

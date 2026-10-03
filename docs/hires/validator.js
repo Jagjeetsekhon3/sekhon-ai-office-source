@@ -4,7 +4,8 @@
 'use strict';
 
 window.HireSpec = (function () {
-  const SPEC = 'munder-difflin/hire@1';
+  const SPEC = 'sekhon-ai-office/hire@1';
+  const LEGACY_SPEC = 'munder-difflin/hire@1';
   const PROVIDERS = ['claude', 'antigravity', 'codex', 'cursor', 'sekhon-local'];
   const PROVIDER_LABEL = { claude: 'Claude Code', antigravity: 'Antigravity', codex: 'Codex', cursor: 'Cursor', 'sekhon-local': 'Sekhon Local' };
   const FLAG_RE = /^[A-Za-z0-9._\/=:,@+-]{1,100}$/;
@@ -35,7 +36,7 @@ window.HireSpec = (function () {
     if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
       return { ok: false, errors: ['manifest must be a JSON object'] };
     }
-    if (raw.spec !== SPEC) return { ok: false, errors: ['unsupported spec (expected "' + SPEC + '")'] };
+    if (raw.spec !== SPEC && raw.spec !== LEGACY_SPEC) return { ok: false, errors: ['unsupported spec (expected "' + SPEC + '")'] };
     const str = (v) => typeof v === 'string';
     const cap = (v, max, field, required) => {
       if (v === undefined || v === null) { if (required) errors.push('"' + field + '" is required'); return; }

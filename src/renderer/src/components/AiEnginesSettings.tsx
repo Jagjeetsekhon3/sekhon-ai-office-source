@@ -445,7 +445,7 @@ export function AiEnginesSettings({ config }: { config: HarnessConfig }) {
         </div>
       </div>
 
-      {/* Unsandboxed-in-auto caveat (Pam guardrail #6) */}
+      {/* Unsandboxed-in-auto caveat (Creative Director guardrail #6) */}
       <div style={{
         fontSize: 12, color: 'var(--cth-ink-700)', lineHeight: '17px',
         padding: 8, boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)', background: 'var(--cth-paper-100)'

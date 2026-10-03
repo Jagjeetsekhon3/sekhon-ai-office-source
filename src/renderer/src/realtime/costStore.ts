@@ -1,12 +1,12 @@
 /**
- * Realtime Michael — renderer cost store (card rt-9, cost-guard).
+ * Realtime Sekhon Manager — renderer cost store (card rt-9, cost-guard).
  *
  * A tiny external store (same useSyncExternalStore shape as session.ts) that
  * tracks the LIVE cost of the current voice session: it accumulates usage deltas,
  * prices them via the shared audio rates, and exposes a running dollar figure +
  * token counts, an optional spend cap, and an idle signal for mic-off-when-idle.
  *
- * Net-new + disjoint by design: I own this file + the HUD that reads it. Kevin's
+ * Net-new + disjoint by design: I own this file + the HUD that reads it. Accountant's
  * session (session.ts) feeds it through TWO one-line calls (the integration points
  * god assigned to him):
  *   • on connect():            resetRealtimeCost()
@@ -57,7 +57,7 @@ function recomputeOverCap(usd: number, capUsd: number | null): boolean {
   return capUsd != null && capUsd > 0 && usd >= capUsd;
 }
 
-/** Begin metering a fresh session (Kevin: call from session connect()). Preserves
+/** Begin metering a fresh session (Accountant: call from session connect()). Preserves
  *  the user's chosen cap across sessions; zeroes the running totals. */
 export function resetRealtimeCost(startedAtMs: number): void {
   setState({
@@ -75,7 +75,7 @@ export function endRealtimeCost(): void {
   setState({ startedTs: null });
 }
 
-/** Accumulate one usage delta (Kevin: call on each realtime usage event). */
+/** Accumulate one usage delta (Accountant: call on each realtime usage event). */
 export function recordRealtimeUsage(usage: RealtimeUsage, nowMs: number): void {
   const { inputTokens, outputTokens } = normalizeRealtimeUsage(usage);
   if (inputTokens === 0 && outputTokens === 0) return;

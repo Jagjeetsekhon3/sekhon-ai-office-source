@@ -1,5 +1,5 @@
 /**
- * Realtime Michael — main-process ephemeral-token mint (card rt-1, Phase 1).
+ * Realtime Sekhon Manager — main-process ephemeral-token mint (card rt-1, Phase 1).
  *
  * The voice orchestrator (OpenAI `gpt-realtime-2`, speech-to-speech over WebRTC)
  * connects from the RENDERER. The renderer must NEVER hold the real OpenAI key, so
@@ -20,7 +20,7 @@ import { getSecret, hasSecret } from './integrations';
 /** Mirrors `providerKeyRef('openai')` in src/main/index.ts (BACKEND_KEY_ENV maps
  *  openai→OPENAI_API_KEY). Inlined as a local const so this module needs no new
  *  export added to index.ts — keeping the index.ts edit to a single registration
- *  line (rt-1 COORD: Oscar also edits index.ts). */
+ *  line (rt-1 COORD: Business Analyst also edits index.ts). */
 const OPENAI_KEY_REF = 'apikey:openai';
 
 /** GA speech-to-speech model for the voice orchestrator (v0.3.4: bumped to the
@@ -43,7 +43,7 @@ export type MintResult =
   | { ok: false; error: string; code?: string };
 
 /** Whether a BYOK OpenAI key is stored (presence only — no decryption). Gates the
- *  Realtime Michael voice toggle in the renderer, the way `hasGroqKey` gates the
+ *  Realtime Sekhon Manager voice toggle in the renderer, the way `hasGroqKey` gates the
  *  Free Flow mic button. */
 export function hasOpenAiKey(): boolean {
   return hasSecret(OPENAI_KEY_REF);
@@ -111,7 +111,7 @@ export async function mintRealtimeToken(model: string = REALTIME_MODEL): Promise
 
 /** Register the renderer-facing realtime IPC. A SINGLE call from index.ts (rather
  *  than per-handler `ipcMain.handle` lines there) keeps the index.ts footprint to
- *  one line — rt-1 COORD note (Oscar also edits index.ts). Neither handler ever
+ *  one line — rt-1 COORD note (Business Analyst also edits index.ts). Neither handler ever
  *  returns the real OpenAI key. */
 export function registerRealtimeIpc(): void {
   // Boolean presence only — gates the voice toggle.

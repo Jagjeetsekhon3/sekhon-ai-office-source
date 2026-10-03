@@ -52,7 +52,7 @@ export interface LeadRow {
  * FUTURE (do NOT build in v1 — reserved so the array isn't painted into a corner):
  *   - Phase B: `agents` + `message_queue` mirror of the renderer roster/queues
  *     (dual-write), enabling the eventual authority flip off localStorage.
- *   - Cross-lane (Lane A #6): migrate Jim's cost ledger onto this DB so his
+ *   - Cross-lane (Lane A #6): migrate Business Lead's cost ledger onto this DB so his
  *     circuit-breaker can move off transcript-polling. Column names match his
  *     <harnessHome>/hive/cost-ledger.jsonl keys 1:1 for a straight INSERT…SELECT
  *     (coordinated w/ jim-mq290qkn 2026-06-06):
