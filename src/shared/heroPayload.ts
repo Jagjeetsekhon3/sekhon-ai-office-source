@@ -47,7 +47,7 @@ export interface HeroPayload {
 export const DEFAULT_HERO: HeroPayload = {
   plan: {
     label: 'Free · Local',
-    blurb: 'Run agents on your machine with your own AI subscriptions, API keys, and local models. No Sekhon AI Office seat fee or feature paywall.'
+    blurb: 'Run agents on your machine with your own API keys and local models. No Sekhon AI Office seat fee or feature paywall.'
   },
   sponsor: null,
   notice: null
