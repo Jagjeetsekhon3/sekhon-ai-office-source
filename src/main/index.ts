@@ -1,3 +1,4 @@
+import { nativeProviderAuthEnv } from './nativeProviderAuth';
 import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, powerMonitor, powerSaveBlocker, screen, shell, Notification } from 'electron';
 import { spawn } from 'node:child_process';
 import {
@@ -2996,6 +2997,9 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
   if (Object.keys(nonInteractiveEnv).length > 0) {
     opts.env = { ...(opts.env ?? {}), ...nonInteractiveEnv };
   }
+  // Prefer the owner's stored API key when present; otherwise preserve CLI login.
+  const cloudAuthEnv = nativeProviderAuthEnv(provider, integrations.getSecret, opts.env?.GEMINI_CLI_SYSTEM_SETTINGS_PATH);
+  if (Object.keys(cloudAuthEnv).length > 0) opts.env = { ...(opts.env ?? {}), ...cloudAuthEnv };
   // ── BYOK keys + per-provider config for the non-Claude CLI engines (v0.3.1) ──
   // OpenCode / Crush / pi / qwen read BYOK API keys from standard env vars and, for
   // the local-LLM path, a per-provider base URL. Keys are write-only in the broker

@@ -2185,6 +2185,13 @@ export class HiveManager {
         }
       };
       writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
+      // API-key spawns use this per-agent user profile: unlike a system settings
+      // file, Gemini accepts owner-writable user settings. Global login stays intact.
+      const profileDir = join(home, '.gemini');
+      mkdirSync(profileDir, { recursive: true });
+      writeFileSync(join(profileDir, 'settings.json'), JSON.stringify({
+        ...settings, security: { auth: { selectedType: 'gemini-api-key' } }
+      }, null, 2), 'utf8');
     } catch (e) { console.error('[hive] installGeminiHooks failed:', e); }
     return settingsPath;
   }
