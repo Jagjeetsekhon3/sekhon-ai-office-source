@@ -354,7 +354,7 @@
       "voiceChat": "Voice chat with {{godName}}",
       "voiceChatDesc": "Talk to the orchestrator in real time. Toggle it on from {{godName}}'s tab; choose which microphone and speaker the voice loop uses here.",
       "openaiKey": "OpenAI API key · voice",
-      "openaiKeyDesc1": "Talking to {{godName}} runs on OpenAI's Realtime API — speech in, speech out, over a live connection to {{model}}. That is a different service from the Claude subscription your agents run on, so it needs its own OpenAI API key.",
+      "openaiKeyDesc1": "Talking to {{godName}} runs on OpenAI's Realtime API — speech in, speech out, over a live connection to {{model}}. That is a different service from the other AI providers used by your agents, so it needs its own OpenAI API key.",
       "openaiKeyDesc2": "Paste it once below. It is encrypted on this machine and never shown again — each voice session mints its own short-lived token from it, and the key itself never leaves your computer. It is the same OpenAI key listed under Agents & Models; setting it in either place is enough.",
       "keyPlaceholderSaved": "key saved — paste a new one to replace it",
       "save": "Save",
@@ -582,8 +582,8 @@
       "welcome": "MEET YOUR OFFICE",
       "home": "STEP 1 OF 4 · HARNESS HOME",
       "homePlain": "STEP 1 OF 4 · A HOME FOR THE APP",
-      "orchestrator": "STEP 2 OF 4 · YOUR CLONE'S ENGINE",
-      "orchestratorPlain": "STEP 2 OF 4 · YOUR CLONE",
+      "orchestrator": "STEP 2 OF 4 · YOUR SEKHON MANAGER'S ENGINE",
+      "orchestratorPlain": "STEP 2 OF 4 · YOUR SEKHON MANAGER",
       "repos": "STEP 3 OF 4 · YOUR REPOS",
       "reposPlain": "STEP 3 OF 4 · YOUR PROJECTS",
       "permissions": "STEP 4 OF 4 · PERMISSIONS & RELIABILITY",
@@ -600,9 +600,9 @@
       "nonTechnicalDesc": "I'm in marketing, sales, ops, or just starting out. Explain things in plain language."
     },
     "welcome": {
-      "headline": "YOUR CLONE AND THE FLOOR IT RUNS",
-      "descPlain": "Your clone runs a small office of AI workers, and you watch it all from one screen. Here's what's inside:",
-      "desc": "Your clone coordinates a hive of AI coding agents — persistent, watchable, all local. Here's what's inside:",
+      "headline": "YOUR SEKHON MANAGER AND THE FLOOR IT RUNS",
+      "descPlain": "Your Sekhon Manager runs a small office of AI workers, and you watch it all from one screen. Here's what's inside:",
+      "desc": "Your Sekhon Manager coordinates a hive of AI coding agents — persistent, watchable, all local. Here's what's inside:",
       "features": {
         "engines": {
           "label": "ELEVEN ENGINES, ONE OFFICE",
@@ -610,9 +610,9 @@
           "descPlain": "Eleven AI assistants — Claude, Codex, Cursor, Gemini, Grok and more — working side by side in one shared office."
         },
         "clone": {
-          "label": "{{godName}} IS YOUR CLONE",
-          "desc": "Your clone runs the floor — triages requests, routes tasks, and escalates only what needs you.",
-          "descPlain": "Your clone, {{godName}}, takes your requests, hands work to the right agent, and only interrupts you when it matters."
+          "label": "{{godName}} IS YOUR SEKHON MANAGER",
+          "desc": "Your Sekhon Manager runs the floor — triages requests, routes tasks, and escalates only what needs you.",
+          "descPlain": "Your Sekhon Manager, {{godName}}, takes your requests, hands work to the right agent, and only interrupts you when it matters."
         },
         "memory": {
           "label": "LONG-TERM MEMORY",
@@ -654,13 +654,13 @@
       "note": "Think of this as the \"town hall.\" The harness pins agent state there so sessions can be picked back up after a restart."
     },
     "orchestrator": {
-      "descPlain": "{{godName}} is your clone — he reads your requests, breaks them into tasks, and hands them to the right agent. He's the boss of the floor; you're still the boss of him. Choose which AI engine powers him.",
-      "desc": "{{godName}} is your clone — the boss of the floor you just met. He triages your requests, assigns tasks, and manages the team, while escalating anything that genuinely needs you. Pick the engine and model that power him; give him a longer-context, higher-capability model.",
-      "cliAgentPlain": "A <strong>CLI agent</strong> is an AI coding assistant that runs on your computer — popular ones are Claude Code (Anthropic), Codex (OpenAI) and Antigravity (Google Gemini). <strong>Your clone</strong> is the always-on one that runs your whole office. We recommend Claude Code on Opus 4.8 (1M). You can add or switch the others later.",
-      "cliAgent": "Each option is a <strong>CLI engine</strong> (Claude Code, Codex, Antigravity/Gemini, or a local proxy like Qwen). Engines marked INSTALLED are already on this machine; INSTALLS ON FIRST RUN means the app sets it up when {{godName}} first starts. <strong>Your clone</strong> ({{godName}}) is the engine that orchestrates the whole hive. Recommended: Claude Code · Opus 4.8 · 1M. Other providers can be wired per agent later.",
+      "descPlain": "{{godName}} is your Sekhon Manager — he reads your requests, breaks them into tasks, and hands them to the right agent. He's the boss of the floor; you're still the boss of him. Choose which AI engine powers him.",
+      "desc": "{{godName}} is your Sekhon Manager — the boss of the floor you just met. He triages your requests, assigns tasks, and manages the team, while escalating anything that genuinely needs you. Pick the engine and model that power him; give him a longer-context, higher-capability model.",
+      "cliAgentPlain": "A <strong>CLI agent</strong> is an AI coding assistant that runs on your computer — popular ones are Claude Code (Anthropic), Codex (OpenAI) and Antigravity (Google Gemini). <strong>Your Sekhon Manager</strong> is the always-on one that runs your whole office. We recommend Claude Code on Opus 4.8 (1M). You can add or switch the others later.",
+      "cliAgent": "Each option is a <strong>CLI engine</strong> (Claude Code, Codex, Antigravity/Gemini, or a local proxy like Qwen). Engines marked INSTALLED are already on this machine; INSTALLS ON FIRST RUN means the app sets it up when {{godName}} first starts. <strong>Your Sekhon Manager</strong> ({{godName}}) is the engine that orchestrates the whole hive. Recommended: Claude Code · Opus 4.8 · 1M. Other providers can be wired per agent later.",
       "recommended": "RECOMMENDED",
       "workersOnly": "WORKERS ONLY",
-      "workersOnlyHint": "Can't drain hive mail yet, so it can't run your clone — still available when hiring workers.",
+      "workersOnlyHint": "Can't drain hive mail yet, so it can't run your Sekhon Manager — still available when hiring workers.",
       "model": "Model",
       "modelNote": "This only sets {{godName}}'s engine. You can run other providers per agent later."
     },
@@ -1042,13 +1042,13 @@
     "sectionWebhooks": "Webhooks",
     "sectionWebhooksBlurb": "Everything posted to your webhook endpoints, next to what {{godName}} sent back.",
     "sectionOrg": "Organization",
-    "sectionOrgBlurb": "Messages from your teammates' clone nodes, next to what {{godName}} sent back.",
+    "sectionOrgBlurb": "Messages from your teammates' Sekhon AI Office nodes, next to what {{godName}} sent back.",
     "heldOne": "One message is held, waiting on your yes or no.",
     "heldMany": "{{count}} messages are held, waiting on your yes or no.",
     "decideFailed": "That did not go through. Try again.",
     "clearFailed": "Could not clear it. Try again.",
     "emptyOrgTitle": "Nothing here yet, and nothing is broken.",
-    "emptyOrgBody": "Teammate messaging is not built yet. You can set an org key and pick a mode today, but no one's clone node can reach yours until the transport ships. When it does, their messages and our replies land here.",
+    "emptyOrgBody": "Teammate messaging is not built yet. You can set an org key and pick a mode today, but no one's Sekhon AI Office node can reach yours until the transport ships. When it does, their messages and our replies land here.",
     "emptyWebhookTitle": "No webhook messages yet.",
     "emptyWebhookBody": "When something posts to one of your endpoints, it lands here with {{godName}}'s reply underneath. Nothing has called in so far. Add an endpoint under Webhooks to get a URL you can hand out.",
     "clearConfirm": "Delete all {{count}} messages? The record is gone for good.",
