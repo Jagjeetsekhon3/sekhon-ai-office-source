@@ -91,7 +91,7 @@ export function SettingsHeroCard() {
             marginTop: 6, fontSize: 12.5, lineHeight: 1.5,
             color: 'var(--cth-ink-700)', maxWidth: '68ch'
           }}>
-            Run agents on your own machine using your own AI subscriptions, API keys,
+            Run agents on your own machine using your own API keys,
             and local models. Sekhon AI Office has no paid app plan, seat fee, or
             feature paywall during development.
           </div>
@@ -107,7 +107,7 @@ export function SettingsHeroCard() {
         }}>
           <b>Your AI usage is separate.</b>{' '}
           Providers such as OpenAI, Anthropic, Gemini, OpenRouter and Groq may charge
-          for their own API usage or subscriptions. Local models such as Ollama can
+          for their own API usage. Local models such as Ollama can
           run without a cloud API bill.
         </div>
 
