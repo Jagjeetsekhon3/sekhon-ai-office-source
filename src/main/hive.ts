@@ -733,6 +733,9 @@ export class HiveManager {
        *  MemPalace dir, which `mempalace` mutates). Absolute paths; ignored
        *  for providers without a sandbox. */
       extraWritableDirs?: string[];
+      /** Current floor autonomy state. Used to decide whether Codex is running
+       *  with workspace-write before adding extra writable roots. */
+      autoMode?: boolean;
     } = {}
   ): Promise<SpawnInjection> {
     const root = this.root();
