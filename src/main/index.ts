@@ -2825,7 +2825,10 @@ async function spawnAgentCore(opts: AgentSpawnOptions, owner: Electron.WebConten
           skillsDir: skillsResourceDir(),
           // The shared palace is mutated by the agent's own `mempalace` calls, so
           // the OS sandbox must let it through (empty when memory is off).
-          extraWritableDirs: [memory.env().MEMPALACE_PALACE_PATH].filter((p): p is string => !!p)
+          extraWritableDirs: [memory.env().MEMPALACE_PALACE_PATH].filter((p): p is string => !!p),
+          // Keep Codex --add-dir in lockstep with the same global auto-mode
+          // posture that later adds "-a never -s workspace-write".
+          autoMode: readConfig().autoMode
         }
       );
       opts.args = [...(opts.args ?? []), ...inj.args];
